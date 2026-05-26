@@ -14,9 +14,12 @@ app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
 // MongoDB Connection (optional - app works without it for demo)
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/doctor-clinic')
+mongoose.set('bufferCommands', false); // Don't queue DB operations if not connected
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/doctor-clinic', {
+  serverSelectionTimeoutMS: 5000, // Fail fast if no DB
+})
   .then(() => console.log('MongoDB Connected Successfully'))
-  .catch(err => console.warn('MongoDB not connected - Running in DEMO mode (dummy login works fine):', err.message));
+  .catch(err => console.warn('MongoDB not connected - Running in DEMO mode. Use: admin@clinic.com / admin123'));
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));

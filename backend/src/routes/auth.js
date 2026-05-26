@@ -86,6 +86,11 @@ router.post('/login', async (req, res) => {
     }
     // ===== END DUMMY LOGIN =====
 
+    // Check if MongoDB is connected before querying
+    if (require('mongoose').connection.readyState !== 1) {
+      return res.status(400).json({ message: 'Invalid credentials. Use demo: admin@clinic.com / admin123' });
+    }
+
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
