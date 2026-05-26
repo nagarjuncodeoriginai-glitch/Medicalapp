@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaStethoscope } from 'react-icons/fa';
-import { FiUser, FiMail, FiLock, FiPhone, FiMapPin } from 'react-icons/fi';
+import { FaHeartbeat } from 'react-icons/fa';
+import { FiUser, FiMail, FiLock, FiPhone, FiMapPin, FiArrowRight } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
 
 const specialties = [
   { value: 'general', label: 'General Physician' },
+  { value: 'geriatric', label: 'Geriatric Medicine' },
+  { value: 'cardiology', label: 'Cardiologist' },
+  { value: 'ortho', label: 'Orthopedic' },
+  { value: 'neuro', label: 'Neurologist' },
   { value: 'dental', label: 'Dentist' },
   { value: 'eye', label: 'Ophthalmologist' },
-  { value: 'ortho', label: 'Orthopedic' },
   { value: 'pediatric', label: 'Pediatrician' },
   { value: 'dermatology', label: 'Dermatologist' },
-  { value: 'ent', label: 'ENT Specialist' },
-  { value: 'cardiology', label: 'Cardiologist' },
-  { value: 'gynecology', label: 'Gynecologist' },
   { value: 'other', label: 'Other' },
 ];
 
@@ -33,7 +33,7 @@ export default function Register() {
       const { data } = await api.post('/auth/register', form);
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-      toast.success('Welcome to DocClinic Pro! 30-day free trial activated.');
+      toast.success('Welcome! 30-day free trial activated.');
       navigate('/');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Registration failed');
@@ -43,120 +43,145 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left Panel */}
-      <div className="hidden lg:flex lg:w-2/5 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 p-12 flex-col justify-between relative overflow-hidden">
-        <div className="absolute top-20 right-10 w-72 h-72 bg-emerald-400/20 rounded-full" />
-        <div className="absolute bottom-10 left-10 w-48 h-48 bg-teal-400/20 rounded-full" />
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Orbs */}
+      <div className="gradient-orb orb-1"></div>
+      <div className="gradient-orb orb-2"></div>
+      <div className="gradient-orb orb-3"></div>
+
+      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-5 gap-0 relative z-10">
         
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-16">
-            <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center">
-              <FaStethoscope className="text-white text-2xl" />
+        {/* Left Panel - Branding (2 cols) */}
+        <div className="hidden lg:flex lg:col-span-2 flex-col justify-between glass-card rounded-l-3xl p-8">
+          <div>
+            <div className="flex items-center gap-3 mb-10">
+              <div className="w-11 h-11 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-violet-500/30 animate-pulse-glow">
+                <FaHeartbeat className="text-white text-lg" />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-white">DocClinic Pro</h1>
+                <p className="text-[10px] text-white/50 uppercase tracking-wider">Elder Care Platform</p>
+              </div>
             </div>
-            <span className="text-2xl font-bold text-white">DocClinic Pro</span>
+
+            <h2 className="text-3xl font-bold text-white leading-tight mb-4">
+              Start Your<br />
+              <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">Free Trial</span>
+            </h2>
+            <p className="text-white/50 text-sm leading-relaxed">
+              No credit card needed. Full access for 30 days.
+            </p>
           </div>
-          <h2 className="text-3xl font-bold text-white leading-tight mb-4">
-            Start Your<br />30-Day Free Trial
-          </h2>
-          <p className="text-emerald-100 text-lg">No credit card required. Cancel anytime.</p>
+
+          {/* What you get */}
+          <div className="mt-8 space-y-3">
+            <p className="text-xs font-semibold text-white/70 uppercase tracking-wider mb-3">Everything Included:</p>
+            {[
+              { icon: '📅', text: 'Elderly Appointment Management' },
+              { icon: '💊', text: 'Medication Tracking & Reminders' },
+              { icon: '🛡️', text: 'Insurance Claim Management' },
+              { icon: '🏠', text: 'Home Care Visit Scheduling' },
+              { icon: '💎', text: 'Monthly Retainer Billing' },
+              { icon: '📱', text: 'WhatsApp Notifications' },
+            ].map((item, i) => (
+              <div key={i} className="flex items-center gap-3 py-2 px-3 rounded-xl bg-white/5 border border-white/5">
+                <span className="text-base">{item.icon}</span>
+                <span className="text-xs text-white/70">{item.text}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="relative z-10 bg-white/10 backdrop-blur rounded-2xl p-6">
-          <p className="text-white font-semibold mb-3">What you get free:</p>
-          <ul className="space-y-2 text-emerald-100">
-            <li className="flex items-center gap-2"><span className="text-emerald-300">&#10003;</span> Unlimited patients</li>
-            <li className="flex items-center gap-2"><span className="text-emerald-300">&#10003;</span> Appointment management</li>
-            <li className="flex items-center gap-2"><span className="text-emerald-300">&#10003;</span> Digital prescriptions</li>
-            <li className="flex items-center gap-2"><span className="text-emerald-300">&#10003;</span> Billing & invoices</li>
-            <li className="flex items-center gap-2"><span className="text-emerald-300">&#10003;</span> WhatsApp reminders</li>
-          </ul>
-        </div>
-      </div>
+        {/* Right Panel - Form (3 cols) */}
+        <div className="lg:col-span-3 glass-card rounded-3xl lg:rounded-l-none lg:rounded-r-3xl p-8 md:p-10 overflow-y-auto max-h-[90vh]">
+          {/* Mobile Logo */}
+          <div className="lg:hidden flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-xl flex items-center justify-center">
+              <FaHeartbeat className="text-white text-lg" />
+            </div>
+            <span className="text-lg font-bold text-white">DocClinic Pro</span>
+          </div>
 
-      {/* Right Panel - Form */}
-      <div className="flex-1 flex items-center justify-center p-6 overflow-y-auto">
-        <div className="w-full max-w-lg py-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Create Your Account</h2>
-          <p className="text-gray-500 mb-8">Join 1000+ doctors managing their clinic digitally</p>
+          <h2 className="text-2xl font-bold text-white mb-1">Create Account</h2>
+          <p className="text-white/50 mb-6 text-sm">Join healthcare professionals managing elderly care digitally</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <label className="block text-xs font-medium text-white/60 mb-1.5 uppercase tracking-wider">Full Name</label>
                 <div className="relative">
-                  <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <FiUser className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-sm" />
                   <input type="text" value={form.name} onChange={(e) => setForm({...form, name: e.target.value})}
-                    className="input-field pl-10 py-2.5" placeholder="Dr. John" required />
+                    className="input-field pl-10 py-3" placeholder="Dr. Name" required />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <label className="block text-xs font-medium text-white/60 mb-1.5 uppercase tracking-wider">Phone</label>
                 <div className="relative">
-                  <FiPhone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <FiPhone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-sm" />
                   <input type="tel" value={form.phone} onChange={(e) => setForm({...form, phone: e.target.value})}
-                    className="input-field pl-10 py-2.5" placeholder="+91 98765 43210" required />
+                    className="input-field pl-10 py-3" placeholder="+91 98765 43210" required />
                 </div>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label className="block text-xs font-medium text-white/60 mb-1.5 uppercase tracking-wider">Email</label>
               <div className="relative">
-                <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <FiMail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-sm" />
                 <input type="email" value={form.email} onChange={(e) => setForm({...form, email: e.target.value})}
-                  className="input-field pl-10 py-2.5" placeholder="doctor@gmail.com" required />
+                  className="input-field pl-10 py-3" placeholder="doctor@clinic.com" required />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <label className="block text-xs font-medium text-white/60 mb-1.5 uppercase tracking-wider">Password</label>
               <div className="relative">
-                <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <FiLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-sm" />
                 <input type="password" value={form.password} onChange={(e) => setForm({...form, password: e.target.value})}
-                  className="input-field pl-10 py-2.5" placeholder="Min 6 characters" required minLength={6} />
+                  className="input-field pl-10 py-3" placeholder="Min 6 characters" required minLength={6} />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Specialty</label>
+                <label className="block text-xs font-medium text-white/60 mb-1.5 uppercase tracking-wider">Specialty</label>
                 <select value={form.specialty} onChange={(e) => setForm({...form, specialty: e.target.value})}
-                  className="input-field py-2.5">
-                  {specialties.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                  className="input-field py-3">
+                  {specialties.map(s => <option key={s.value} value={s.value} className="bg-[#1a1744] text-white">{s.label}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Qualification</label>
+                <label className="block text-xs font-medium text-white/60 mb-1.5 uppercase tracking-wider">Qualification</label>
                 <input type="text" value={form.qualification} onChange={(e) => setForm({...form, qualification: e.target.value})}
-                  className="input-field py-2.5" placeholder="MBBS, MD" />
+                  className="input-field py-3" placeholder="MBBS, MD" />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Clinic Name</label>
+                <label className="block text-xs font-medium text-white/60 mb-1.5 uppercase tracking-wider">Clinic Name</label>
                 <input type="text" value={form.clinicName} onChange={(e) => setForm({...form, clinicName: e.target.value})}
-                  className="input-field py-2.5" placeholder="Health Plus Clinic" />
+                  className="input-field py-3" placeholder="Health Plus Clinic" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                <label className="block text-xs font-medium text-white/60 mb-1.5 uppercase tracking-wider">City</label>
                 <div className="relative">
-                  <FiMapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <FiMapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-sm" />
                   <input type="text" value={form.clinicCity} onChange={(e) => setForm({...form, clinicCity: e.target.value})}
-                    className="input-field pl-10 py-2.5" placeholder="Mumbai" />
+                    className="input-field pl-10 py-3" placeholder="Mumbai" />
                 </div>
               </div>
             </div>
 
-            <button type="submit" disabled={loading} className="btn-primary w-full py-3.5 text-center mt-6">
-              {loading ? 'Creating Account...' : 'Start Free Trial - No Card Needed'}
+            <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2 text-sm mt-6">
+              {loading ? 'Creating Account...' : <>Start 30-Day Free Trial <FiArrowRight /></>}
             </button>
           </form>
 
-          <p className="text-center mt-6 text-gray-500">
+          <p className="text-center mt-6 text-white/40 text-sm">
             Already have an account?{' '}
-            <Link to="/login" className="text-blue-600 font-semibold hover:text-blue-700">Sign In</Link>
+            <Link to="/login" className="text-violet-400 font-semibold hover:text-violet-300 transition-colors">Sign In</Link>
           </p>
         </div>
       </div>
