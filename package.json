@@ -1,0 +1,20 @@
+{
+  "name": "doctor-clinic-app",
+  "version": "1.0.0",
+  "description": "All-in-One Doctor Clinic Management App - Web & Mobile",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "web",
+    "mobile"
+  ],
+  "scripts": {
+    "backend": "cd backend && npm run dev",
+    "web": "cd web && npm run dev",
+    "install:all": "npm install && cd backend && npm install && cd ../web && npm install",
+    "dev": "concurrently \"npm run backend\" \"npm run web\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
