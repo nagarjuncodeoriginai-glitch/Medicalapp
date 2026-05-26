@@ -13,10 +13,10 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
-// MongoDB Connection
+// MongoDB Connection (optional - app works without it for demo)
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/doctor-clinic')
   .then(() => console.log('MongoDB Connected Successfully'))
-  .catch(err => console.error('MongoDB Connection Error:', err));
+  .catch(err => console.warn('MongoDB not connected - Running in DEMO mode (dummy login works fine):', err.message));
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));

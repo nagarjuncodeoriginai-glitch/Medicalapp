@@ -64,6 +64,28 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // ===== DUMMY LOGIN (No Database Needed) =====
+    // Email: admin@clinic.com | Password: admin123
+    if (email === 'admin@clinic.com' && password === 'admin123') {
+      const token = jwt.sign(
+        { userId: 'demo-doctor-001' },
+        process.env.JWT_SECRET || 'doctor-clinic-secret-2024',
+        { expiresIn: '30d' }
+      );
+      return res.json({
+        token,
+        user: {
+          id: 'demo-doctor-001',
+          name: 'Zakir',
+          email: 'admin@clinic.com',
+          specialty: 'general',
+          clinicName: 'LifeCare Clinic',
+          plan: 'pro'
+        }
+      });
+    }
+    // ===== END DUMMY LOGIN =====
+
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
