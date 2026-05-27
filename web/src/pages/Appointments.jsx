@@ -1,217 +1,120 @@
 import React, { useState } from 'react';
-import { FiPlus, FiCalendar, FiClock, FiCheck, FiX, FiPlay, FiHome, FiRepeat } from 'react-icons/fi';
+import { FiPlus, FiCalendar, FiCheck, FiX, FiPlay, FiHome, FiRepeat } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
-const timeSlots = [
-  '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
-  '12:00 PM', '12:30 PM', '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM',
-  '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM'
-];
-
-const demoAppointments = [
-  { _id: '1', patientId: { name: 'Ramesh Gupta', phone: '9876543210', patientId: 'PAT-0001' }, date: new Date(), timeSlot: '09:00 AM', type: 'routine-checkup', status: 'completed', tokenNumber: 1, age: 72, retainer: true, visitType: 'clinic' },
-  { _id: '2', patientId: { name: 'Savitri Devi', phone: '9876543211', patientId: 'PAT-0002' }, date: new Date(), timeSlot: '09:30 AM', type: 'medication-review', status: 'completed', tokenNumber: 2, age: 68, retainer: true, visitType: 'clinic' },
-  { _id: '3', patientId: { name: 'Mohan Lal', phone: '9876543212', patientId: 'PAT-0003' }, date: new Date(), timeSlot: '10:00 AM', type: 'home-visit', status: 'in-progress', tokenNumber: 3, age: 75, retainer: false, visitType: 'home' },
-  { _id: '4', patientId: { name: 'Kamla Bai', phone: '9876543213', patientId: 'PAT-0004' }, date: new Date(), timeSlot: '10:30 AM', type: 'insurance-consultation', status: 'scheduled', tokenNumber: 4, age: 80, retainer: true, visitType: 'clinic' },
-  { _id: '5', patientId: { name: 'Suresh Patel', phone: '9876543214', patientId: 'PAT-0005' }, date: new Date(), timeSlot: '11:00 AM', type: 'physiotherapy', status: 'scheduled', tokenNumber: 5, age: 65, retainer: false, visitType: 'clinic' },
-  { _id: '6', patientId: { name: 'Padma Sharma', phone: '9876543215', patientId: 'PAT-0006' }, date: new Date(), timeSlot: '11:30 AM', type: 'retainer-visit', status: 'scheduled', tokenNumber: 6, age: 71, retainer: true, visitType: 'home' },
+const appointments = [
+  { _id: '1', token: 1, name: 'Ramesh Gupta', age: 72, phone: '9876543210', time: '09:00 AM', type: 'Routine Checkup', status: 'completed', retainer: true, mode: 'clinic' },
+  { _id: '2', token: 2, name: 'Savitri Devi', age: 68, phone: '9876543211', time: '09:30 AM', type: 'Medication Review', status: 'completed', retainer: true, mode: 'clinic' },
+  { _id: '3', token: 3, name: 'Mohan Lal', age: 75, phone: '9876543212', time: '10:00 AM', type: 'Home Visit', status: 'in-progress', retainer: false, mode: 'home' },
+  { _id: '4', token: 4, name: 'Kamla Bai', age: 80, phone: '9876543213', time: '10:30 AM', type: 'Insurance Consultation', status: 'waiting', retainer: true, mode: 'clinic' },
+  { _id: '5', token: 5, name: 'Suresh Patel', age: 65, phone: '9876543214', time: '11:00 AM', type: 'Physiotherapy', status: 'waiting', retainer: false, mode: 'clinic' },
+  { _id: '6', token: 6, name: 'Padma Sharma', age: 71, phone: '9876543215', time: '11:30 AM', type: 'Monthly Retainer Visit', status: 'waiting', retainer: true, mode: 'home' },
 ];
 
 export default function Appointments() {
-  const [appointments] = useState(demoAppointments);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [showAddModal, setShowAddModal] = useState(false);
 
-  const statusColors = {
-    'completed': 'bg-emerald-500/20 text-emerald-400',
-    'in-progress': 'bg-blue-500/20 text-blue-400',
-    'scheduled': 'bg-white/10 text-white/60',
-    'cancelled': 'bg-rose-500/20 text-rose-400',
-    'no-show': 'bg-orange-500/20 text-orange-400',
-  };
+  const completed = appointments.filter(a => a.status === 'completed').length;
+  const homeVisits = appointments.filter(a => a.mode === 'home').length;
+  const retainerVisits = appointments.filter(a => a.retainer).length;
 
-  const typeColors = {
-    'routine-checkup': 'bg-violet-500/20 text-violet-400 border-violet-500/20',
-    'medication-review': 'bg-blue-500/20 text-blue-400 border-blue-500/20',
-    'home-visit': 'bg-amber-500/20 text-amber-400 border-amber-500/20',
-    'insurance-consultation': 'bg-emerald-500/20 text-emerald-400 border-emerald-500/20',
-    'physiotherapy': 'bg-cyan-500/20 text-cyan-400 border-cyan-500/20',
-    'retainer-visit': 'bg-rose-500/20 text-rose-400 border-rose-500/20',
-  };
-
-  const typeLabels = {
-    'routine-checkup': 'Routine Checkup',
-    'medication-review': 'Medication Review',
-    'home-visit': 'Home Visit',
-    'insurance-consultation': 'Insurance Consult',
-    'physiotherapy': 'Physiotherapy',
-    'retainer-visit': 'Retainer Visit',
+  const statusBadge = {
+    completed: 'badge-green',
+    'in-progress': 'badge-blue',
+    waiting: 'badge-slate',
   };
 
   return (
-    <div className="animate-fade-in-up space-y-6">
+    <div className="space-y-5">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white">Appointments</h1>
-          <p className="text-white/50 mt-1 text-sm">Manage elderly patient schedules</p>
+          <h1 className="page-title">Appointments</h1>
+          <p className="page-subtitle">Manage daily schedule and home visits</p>
         </div>
-        <div className="flex gap-3">
-          <div className="relative">
-            <FiCalendar className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40" />
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="input-field py-2.5 pl-10 pr-4 text-sm"
-            />
-          </div>
-          <button onClick={() => setShowAddModal(true)} className="btn-primary flex items-center gap-2 text-sm py-2.5">
-            <FiPlus /> Book Appointment
-          </button>
+        <div className="flex gap-2">
+          <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className="input-field py-2 w-40" />
+          <button onClick={() => setShowAddModal(true)} className="btn-primary flex items-center gap-1.5"><FiPlus className="text-sm" /> Book</button>
         </div>
       </div>
 
-      {/* Stats Row */}
+      {/* Summary */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <div className="glass-card rounded-xl p-4 text-center">
-          <p className="text-2xl font-bold text-white">{appointments.length}</p>
-          <p className="text-[11px] text-white/40">Total</p>
-        </div>
-        <div className="glass-card rounded-xl p-4 text-center border-emerald-500/20">
-          <p className="text-2xl font-bold text-emerald-400">{appointments.filter(a => a.status === 'completed').length}</p>
-          <p className="text-[11px] text-white/40">Completed</p>
-        </div>
-        <div className="glass-card rounded-xl p-4 text-center border-blue-500/20">
-          <p className="text-2xl font-bold text-blue-400">{appointments.filter(a => a.status === 'in-progress').length}</p>
-          <p className="text-[11px] text-white/40">In Progress</p>
-        </div>
-        <div className="glass-card rounded-xl p-4 text-center">
-          <p className="text-2xl font-bold text-amber-400">{appointments.filter(a => a.visitType === 'home').length}</p>
-          <p className="text-[11px] text-white/40">Home Visits</p>
-        </div>
-        <div className="glass-card rounded-xl p-4 text-center">
-          <p className="text-2xl font-bold text-rose-400">{appointments.filter(a => a.retainer).length}</p>
-          <p className="text-[11px] text-white/40">Retainer</p>
-        </div>
+        <div className="card p-3 text-center"><p className="text-xl font-bold text-slate-800">{appointments.length}</p><p className="text-[10px] text-slate-500">Total</p></div>
+        <div className="card p-3 text-center"><p className="text-xl font-bold text-emerald-600">{completed}</p><p className="text-[10px] text-slate-500">Completed</p></div>
+        <div className="card p-3 text-center"><p className="text-xl font-bold text-blue-600">1</p><p className="text-[10px] text-slate-500">In Progress</p></div>
+        <div className="card p-3 text-center"><p className="text-xl font-bold text-amber-600">{homeVisits}</p><p className="text-[10px] text-slate-500">Home Visits</p></div>
+        <div className="card p-3 text-center"><p className="text-xl font-bold text-purple-600">{retainerVisits}</p><p className="text-[10px] text-slate-500">Retainer</p></div>
       </div>
 
-      {/* Appointments List */}
-      <div className="glass-card rounded-2xl p-5">
-        <div className="space-y-2.5">
-          {appointments.map(apt => (
-            <div key={apt._id} className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-300 hover:bg-white/5 ${apt.status === 'in-progress' ? 'border-blue-500/30 bg-blue-500/5' : 'border-white/5 bg-white/[0.02]'}`}>
-              <div className="flex items-center gap-4">
-                {/* Token */}
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${statusColors[apt.status]}`}>
-                  #{apt.tokenNumber}
-                </div>
-                {/* Info */}
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="font-semibold text-white text-sm">{apt.patientId.name}</p>
-                    <span className="text-[10px] text-white/30">({apt.age}y)</span>
-                    {apt.retainer && <span className="text-[9px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded font-medium">RETAINER</span>}
-                    {apt.visitType === 'home' && (
-                      <span className="text-[9px] bg-cyan-500/20 text-cyan-400 px-1.5 py-0.5 rounded font-medium flex items-center gap-0.5">
-                        <FiHome className="text-[8px]" /> HOME
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-white/40 mt-0.5">{apt.patientId.patientId} • {apt.patientId.phone}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                {/* Time */}
-                <div className="text-right hidden sm:block">
-                  <p className="text-sm font-medium text-white/80">{apt.timeSlot}</p>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full border font-medium ${typeColors[apt.type]}`}>
-                    {typeLabels[apt.type]}
-                  </span>
-                </div>
-                {/* Status */}
-                <span className={`px-2.5 py-1 rounded-lg text-[10px] font-medium ${statusColors[apt.status]}`}>
-                  {apt.status === 'in-progress' ? 'Active' : apt.status.charAt(0).toUpperCase() + apt.status.slice(1)}
-                </span>
-                {/* Actions */}
-                <div className="flex gap-1.5">
-                  {apt.status === 'scheduled' && (
-                    <button onClick={() => toast.success('Started!')} className="p-2 rounded-lg bg-violet-500/20 text-violet-400 hover:bg-violet-500/30 transition-colors">
-                      <FiPlay className="text-xs" />
-                    </button>
+      {/* List */}
+      <div className="card p-0 overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-slate-50 border-b border-slate-100">
+            <tr>
+              <th className="table-header">#</th>
+              <th className="table-header">Patient</th>
+              <th className="table-header">Time</th>
+              <th className="table-header">Type</th>
+              <th className="table-header">Mode</th>
+              <th className="table-header">Status</th>
+              <th className="table-header">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {appointments.map(apt => (
+              <tr key={apt._id} className={`border-b border-slate-50 hover:bg-slate-50/50 ${apt.status === 'in-progress' ? 'bg-blue-50/30' : ''}`}>
+                <td className="table-cell"><span className="w-6 h-6 bg-slate-100 rounded flex items-center justify-center text-xs font-bold text-slate-600">{apt.token}</span></td>
+                <td className="table-cell">
+                  <p className="text-sm font-medium text-slate-800">{apt.name} <span className="text-slate-400 font-normal">({apt.age}y)</span></p>
+                  <p className="text-[10px] text-slate-400">{apt.phone}</p>
+                </td>
+                <td className="table-cell text-sm text-slate-700 font-medium">{apt.time}</td>
+                <td className="table-cell">
+                  <span className="text-xs text-slate-600">{apt.type}</span>
+                  {apt.retainer && <span className="badge badge-purple text-[8px] ml-1.5">Retainer</span>}
+                </td>
+                <td className="table-cell">
+                  {apt.mode === 'home' ? (
+                    <span className="badge badge-amber flex items-center gap-1 w-fit"><FiHome className="text-[10px]" /> Home</span>
+                  ) : (
+                    <span className="badge badge-slate">Clinic</span>
                   )}
-                  {apt.status === 'in-progress' && (
-                    <button onClick={() => toast.success('Completed!')} className="p-2 rounded-lg bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition-colors">
-                      <FiCheck className="text-xs" />
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+                </td>
+                <td className="table-cell"><span className={`badge ${statusBadge[apt.status]}`}>{apt.status === 'in-progress' ? 'Active' : apt.status === 'completed' ? 'Done' : 'Waiting'}</span></td>
+                <td className="table-cell">
+                  {apt.status === 'waiting' && <button onClick={() => toast.success('Started!')} className="p-1.5 bg-indigo-50 rounded text-indigo-600 hover:bg-indigo-100"><FiPlay className="text-xs" /></button>}
+                  {apt.status === 'in-progress' && <button onClick={() => toast.success('Completed!')} className="p-1.5 bg-emerald-50 rounded text-emerald-600 hover:bg-emerald-100"><FiCheck className="text-xs" /></button>}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
-      {/* Add Appointment Modal */}
+      {/* Add Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="glass-card rounded-2xl w-full max-w-lg p-6 animate-fade-in-up">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-white">Book Appointment</h2>
-              <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-white/10 rounded-lg text-white/60">
-                <FiX className="text-xl" />
-              </button>
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl w-full max-w-md p-6 shadow-xl animate-in">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-lg font-semibold text-slate-900">Book Appointment</h2>
+              <button onClick={() => setShowAddModal(false)} className="p-1.5 hover:bg-slate-100 rounded-lg"><FiX className="text-lg text-slate-500" /></button>
             </div>
-            <form onSubmit={(e) => { e.preventDefault(); toast.success('Appointment booked!'); setShowAddModal(false); }} className="space-y-4">
-              <div>
-                <label className="block text-xs font-medium text-white/60 mb-1.5 uppercase tracking-wider">Patient</label>
-                <select className="input-field py-3">
-                  <option value="" className="bg-[#1a1744]">Select patient...</option>
-                  <option className="bg-[#1a1744]">Ramesh Gupta (PAT-0001)</option>
-                  <option className="bg-[#1a1744]">Savitri Devi (PAT-0002)</option>
-                  <option className="bg-[#1a1744]">Mohan Lal (PAT-0003)</option>
-                </select>
+            <form onSubmit={(e) => { e.preventDefault(); toast.success('Booked!'); setShowAddModal(false); }} className="space-y-3">
+              <div><label className="text-xs font-medium text-slate-600 mb-1 block">Patient</label><select className="input-field"><option>Select patient...</option><option>Ramesh Gupta (PAT-0001)</option><option>Savitri Devi (PAT-0002)</option><option>Mohan Lal (PAT-0003)</option></select></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="text-xs font-medium text-slate-600 mb-1 block">Date</label><input type="date" className="input-field" defaultValue={selectedDate} /></div>
+                <div><label className="text-xs font-medium text-slate-600 mb-1 block">Time</label><select className="input-field"><option>09:00 AM</option><option>09:30 AM</option><option>10:00 AM</option><option>10:30 AM</option><option>11:00 AM</option><option>11:30 AM</option><option>12:00 PM</option></select></div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-white/60 mb-1.5 uppercase tracking-wider">Date</label>
-                  <input type="date" className="input-field py-3" defaultValue={selectedDate} />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-white/60 mb-1.5 uppercase tracking-wider">Time Slot</label>
-                  <select className="input-field py-3">
-                    {timeSlots.map(slot => <option key={slot} className="bg-[#1a1744]">{slot}</option>)}
-                  </select>
-                </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="text-xs font-medium text-slate-600 mb-1 block">Type</label><select className="input-field"><option>Routine Checkup</option><option>Medication Review</option><option>Home Visit</option><option>Insurance Consultation</option><option>Physiotherapy</option><option>Monthly Retainer Visit</option></select></div>
+                <div><label className="text-xs font-medium text-slate-600 mb-1 block">Mode</label><select className="input-field"><option value="clinic">Clinic Visit</option><option value="home">Home Visit</option></select></div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-white/60 mb-1.5 uppercase tracking-wider">Type</label>
-                  <select className="input-field py-3">
-                    <option className="bg-[#1a1744]" value="routine-checkup">Routine Checkup</option>
-                    <option className="bg-[#1a1744]" value="medication-review">Medication Review</option>
-                    <option className="bg-[#1a1744]" value="home-visit">Home Visit</option>
-                    <option className="bg-[#1a1744]" value="insurance-consultation">Insurance Consultation</option>
-                    <option className="bg-[#1a1744]" value="physiotherapy">Physiotherapy</option>
-                    <option className="bg-[#1a1744]" value="retainer-visit">Monthly Retainer Visit</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-white/60 mb-1.5 uppercase tracking-wider">Visit Mode</label>
-                  <select className="input-field py-3">
-                    <option className="bg-[#1a1744]" value="clinic">Clinic Visit</option>
-                    <option className="bg-[#1a1744]" value="home">Home Visit</option>
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-white/60 mb-1.5 uppercase tracking-wider">Notes</label>
-                <textarea className="input-field" rows={3} placeholder="Patient condition, special needs..."></textarea>
-              </div>
-              <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setShowAddModal(false)} className="btn-glass flex-1 text-sm">Cancel</button>
-                <button type="submit" className="btn-primary flex-1 text-sm">Book Appointment</button>
+              <div><label className="text-xs font-medium text-slate-600 mb-1 block">Notes</label><textarea className="input-field" rows={2} placeholder="Patient condition, special needs..."></textarea></div>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setShowAddModal(false)} className="btn-secondary flex-1">Cancel</button>
+                <button type="submit" className="btn-primary flex-1">Book Appointment</button>
               </div>
             </form>
           </div>

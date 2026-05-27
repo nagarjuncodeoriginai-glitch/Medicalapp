@@ -1,22 +1,20 @@
 import React, { useState } from 'react';
-import { FiSearch, FiPlus, FiPhone, FiUser, FiX, FiEdit2, FiTrash2, FiHeart, FiShield } from 'react-icons/fi';
+import { FiSearch, FiPlus, FiPhone, FiX, FiShield, FiRepeat } from 'react-icons/fi';
 import { FaWhatsapp, FaPills } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 
-const demoPatients = [
-  { _id: '1', patientId: 'PAT-0001', name: 'Ramesh Gupta', phone: '9876543210', age: 72, gender: 'male', bloodGroup: 'B+', totalVisits: 24, lastVisit: '2024-01-15', totalBilled: 48000, retainer: true, insurance: 'Star Health', medications: 4, condition: 'Hypertension, Diabetes' },
-  { _id: '2', patientId: 'PAT-0002', name: 'Savitri Devi', phone: '9876543211', age: 68, gender: 'female', bloodGroup: 'A+', totalVisits: 18, lastVisit: '2024-01-14', totalBilled: 35000, retainer: true, insurance: 'ICICI Lombard', medications: 3, condition: 'Arthritis' },
-  { _id: '3', patientId: 'PAT-0003', name: 'Mohan Lal', phone: '9876543212', age: 75, gender: 'male', bloodGroup: 'O+', totalVisits: 32, lastVisit: '2024-01-13', totalBilled: 62000, retainer: false, insurance: 'None', medications: 5, condition: 'Heart Disease, COPD' },
-  { _id: '4', patientId: 'PAT-0004', name: 'Kamla Bai', phone: '9876543213', age: 80, gender: 'female', bloodGroup: 'AB+', totalVisits: 15, lastVisit: '2024-01-12', totalBilled: 28000, retainer: true, insurance: 'Max Bupa', medications: 6, condition: 'Osteoporosis, Thyroid' },
-  { _id: '5', patientId: 'PAT-0005', name: 'Suresh Patel', phone: '9876543214', age: 65, gender: 'male', bloodGroup: 'A-', totalVisits: 10, lastVisit: '2024-01-11', totalBilled: 22000, retainer: false, insurance: 'Niva Bupa', medications: 2, condition: 'Joint Pain' },
-  { _id: '6', patientId: 'PAT-0006', name: 'Padma Sharma', phone: '9876543215', age: 71, gender: 'female', bloodGroup: 'B-', totalVisits: 20, lastVisit: '2024-01-10', totalBilled: 40000, retainer: true, insurance: 'Star Health', medications: 4, condition: 'Diabetes, Cataract' },
+const patients = [
+  { _id: '1', patientId: 'PAT-0001', name: 'Ramesh Gupta', phone: '9876543210', age: 72, gender: 'Male', bloodGroup: 'B+', visits: 24, billed: 48000, retainer: true, insurance: 'Star Health', medications: 4, condition: 'Hypertension, Diabetes' },
+  { _id: '2', patientId: 'PAT-0002', name: 'Savitri Devi', phone: '9876543211', age: 68, gender: 'Female', bloodGroup: 'A+', visits: 18, billed: 35000, retainer: true, insurance: 'ICICI Lombard', medications: 3, condition: 'Rheumatoid Arthritis' },
+  { _id: '3', patientId: 'PAT-0003', name: 'Mohan Lal', phone: '9876543212', age: 75, gender: 'Male', bloodGroup: 'O+', visits: 32, billed: 62000, retainer: false, insurance: 'None', medications: 5, condition: 'Heart Failure, COPD' },
+  { _id: '4', patientId: 'PAT-0004', name: 'Kamla Bai', phone: '9876543213', age: 80, gender: 'Female', bloodGroup: 'AB+', visits: 15, billed: 28000, retainer: true, insurance: 'Max Bupa', medications: 6, condition: 'Osteoporosis, Thyroid' },
+  { _id: '5', patientId: 'PAT-0005', name: 'Suresh Patel', phone: '9876543214', age: 65, gender: 'Male', bloodGroup: 'A-', visits: 10, billed: 22000, retainer: false, insurance: 'Niva Bupa', medications: 2, condition: 'Knee Replacement Recovery' },
+  { _id: '6', patientId: 'PAT-0006', name: 'Padma Sharma', phone: '9876543215', age: 71, gender: 'Female', bloodGroup: 'B-', visits: 20, billed: 40000, retainer: true, insurance: 'Star Health', medications: 4, condition: 'Diabetes, Cataract' },
 ];
 
 export default function Patients() {
-  const [patients] = useState(demoPatients);
   const [search, setSearch] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newPatient, setNewPatient] = useState({ name: '', phone: '', age: '', gender: 'male', bloodGroup: '', address: '' });
 
   const filtered = patients.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -24,106 +22,64 @@ export default function Patients() {
     p.patientId.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleAdd = (e) => {
-    e.preventDefault();
-    toast.success('Patient added successfully!');
-    setShowAddModal(false);
-    setNewPatient({ name: '', phone: '', age: '', gender: 'male', bloodGroup: '', address: '' });
-  };
-
   return (
-    <div className="animate-fade-in-up space-y-6">
+    <div className="space-y-5">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white">Elderly Patients</h1>
-          <p className="text-white/50 mt-1 text-sm">{patients.length} patients under care</p>
+          <h1 className="page-title">Patients</h1>
+          <p className="page-subtitle">{patients.length} elderly patients under care</p>
         </div>
-        <button onClick={() => setShowAddModal(true)} className="btn-primary flex items-center gap-2 text-sm py-2.5">
-          <FiPlus /> Register Patient
+        <button onClick={() => setShowAddModal(true)} className="btn-primary flex items-center gap-1.5">
+          <FiPlus className="text-sm" /> Register Patient
         </button>
       </div>
 
-      {/* Search & Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1 max-w-md">
-          <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" />
-          <input
-            type="text"
-            placeholder="Search by name, phone, or ID..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="input-field pl-11"
-          />
-        </div>
-        <div className="flex gap-2">
-          <button className="btn-glass text-xs py-2 px-4">All</button>
-          <button className="btn-glass text-xs py-2 px-4 opacity-60">Retainer</button>
-          <button className="btn-glass text-xs py-2 px-4 opacity-60">Insured</button>
-        </div>
+      {/* Search */}
+      <div className="relative max-w-sm">
+        <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
+        <input type="text" placeholder="Search name, phone, or ID..." value={search}
+          onChange={(e) => setSearch(e.target.value)} className="input-field pl-9" />
       </div>
 
-      {/* Patient Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 stagger-children">
+      {/* Patient Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {filtered.map(patient => (
-          <div key={patient._id} className="glass-card rounded-2xl p-5 hover:scale-[1.02] transition-all duration-300 group">
-            {/* Header */}
-            <div className="flex items-start justify-between mb-4">
+          <div key={patient._id} className="card hover:shadow-md transition-shadow">
+            {/* Top Row */}
+            <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg ${patient.gender === 'male' ? 'bg-gradient-to-br from-blue-500/30 to-cyan-500/30 text-blue-400' : 'bg-gradient-to-br from-pink-500/30 to-rose-500/30 text-pink-400'}`}>
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm ${patient.gender === 'Male' ? 'bg-blue-50 text-blue-700' : 'bg-pink-50 text-pink-700'}`}>
                   {patient.name.charAt(0)}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-white text-sm">{patient.name}</h3>
-                  <p className="text-[11px] text-white/40">{patient.patientId} • {patient.age}y</p>
+                  <h3 className="text-sm font-semibold text-slate-800">{patient.name}</h3>
+                  <p className="text-[11px] text-slate-400">{patient.patientId} · {patient.age}y · {patient.gender}</p>
                 </div>
               </div>
-              <div className="flex gap-1">
-                {patient.retainer && (
-                  <span className="text-[9px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded font-medium border border-amber-500/20">RETAINER</span>
-                )}
-              </div>
+              {patient.retainer && <span className="badge badge-purple text-[9px]">Retainer</span>}
             </div>
 
             {/* Condition */}
-            <p className="text-xs text-violet-400 font-medium mb-3">{patient.condition}</p>
+            <p className="text-xs text-indigo-600 font-medium mb-3">{patient.condition}</p>
 
-            {/* Info Grid */}
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              <div className="flex items-center gap-2 text-white/50 text-xs">
-                <FiPhone className="text-white/30 text-[10px]" />
-                <span>{patient.phone}</span>
-              </div>
-              <div className="flex items-center gap-2 text-white/50 text-xs">
-                <FiHeart className="text-rose-400/60 text-[10px]" />
-                <span>{patient.bloodGroup}</span>
-              </div>
-              <div className="flex items-center gap-2 text-white/50 text-xs">
-                <FaPills className="text-blue-400/60 text-[10px]" />
-                <span>{patient.medications} medicines</span>
-              </div>
-              <div className="flex items-center gap-2 text-white/50 text-xs">
-                <FiShield className="text-emerald-400/60 text-[10px]" />
-                <span className="truncate">{patient.insurance}</span>
-              </div>
+            {/* Info */}
+            <div className="grid grid-cols-2 gap-y-2 text-xs text-slate-600 mb-3">
+              <div className="flex items-center gap-1.5"><FiPhone className="text-slate-400 text-[10px]" /> {patient.phone}</div>
+              <div className="flex items-center gap-1.5"><FaPills className="text-blue-400 text-[10px]" /> {patient.medications} medicines</div>
+              <div className="flex items-center gap-1.5"><FiShield className="text-emerald-400 text-[10px]" /> {patient.insurance}</div>
+              <div className="flex items-center gap-1.5"><FiRepeat className="text-purple-400 text-[10px]" /> {patient.visits} visits</div>
             </div>
 
-            {/* Stats */}
-            <div className="flex items-center justify-between py-3 border-t border-white/5">
-              <div className="text-center">
-                <p className="text-sm font-bold text-white">{patient.totalVisits}</p>
-                <p className="text-[9px] text-white/30">Visits</p>
-              </div>
-              <div className="text-center">
-                <p className="text-sm font-bold text-emerald-400">₹{(patient.totalBilled/1000).toFixed(0)}K</p>
-                <p className="text-[9px] text-white/30">Billed</p>
-              </div>
+            {/* Footer */}
+            <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+              <span className="text-sm font-semibold text-emerald-600">₹{(patient.billed / 1000).toFixed(0)}K billed</span>
               <div className="flex gap-1.5">
-                <button className="p-2 rounded-lg bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-colors" title="WhatsApp">
-                  <FaWhatsapp className="text-xs" />
+                <button className="p-1.5 rounded bg-green-50 text-green-600 hover:bg-green-100" title="WhatsApp">
+                  <FaWhatsapp className="text-sm" />
                 </button>
-                <button className="p-2 rounded-lg bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 transition-colors" title="View">
-                  <FiUser className="text-xs" />
+                <button className="text-xs bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded font-medium hover:bg-indigo-100">
+                  View
                 </button>
               </div>
             </div>
@@ -131,64 +87,35 @@ export default function Patients() {
         ))}
       </div>
 
-      {/* Add Patient Modal */}
+      {/* Add Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="glass-card rounded-2xl w-full max-w-lg p-6 animate-fade-in-up">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-white">Register Elderly Patient</h2>
-              <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-white/10 rounded-lg text-white/60 transition-colors">
-                <FiX className="text-xl" />
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl w-full max-w-lg p-6 shadow-xl animate-in">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-lg font-semibold text-slate-900">Register Patient</h2>
+              <button onClick={() => setShowAddModal(false)} className="p-1.5 hover:bg-slate-100 rounded-lg">
+                <FiX className="text-lg text-slate-500" />
               </button>
             </div>
-            <form onSubmit={handleAdd} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-white/60 mb-1.5 uppercase tracking-wider">Full Name *</label>
-                  <input type="text" className="input-field py-3" placeholder="Patient name" required
-                    value={newPatient.name} onChange={(e) => setNewPatient({...newPatient, name: e.target.value})} />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-white/60 mb-1.5 uppercase tracking-wider">Phone *</label>
-                  <input type="tel" className="input-field py-3" placeholder="9876543210" required
-                    value={newPatient.phone} onChange={(e) => setNewPatient({...newPatient, phone: e.target.value})} />
-                </div>
+            <form onSubmit={(e) => { e.preventDefault(); toast.success('Patient registered!'); setShowAddModal(false); }} className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="text-xs font-medium text-slate-600 mb-1 block">Full Name *</label><input className="input-field" placeholder="Patient name" required /></div>
+                <div><label className="text-xs font-medium text-slate-600 mb-1 block">Phone *</label><input className="input-field" placeholder="9876543210" required /></div>
               </div>
               <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-white/60 mb-1.5 uppercase tracking-wider">Age</label>
-                  <input type="number" className="input-field py-3" placeholder="72"
-                    value={newPatient.age} onChange={(e) => setNewPatient({...newPatient, age: e.target.value})} />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-white/60 mb-1.5 uppercase tracking-wider">Gender</label>
-                  <select className="input-field py-3" value={newPatient.gender} onChange={(e) => setNewPatient({...newPatient, gender: e.target.value})}>
-                    <option value="male" className="bg-[#1a1744]">Male</option>
-                    <option value="female" className="bg-[#1a1744]">Female</option>
-                    <option value="other" className="bg-[#1a1744]">Other</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-white/60 mb-1.5 uppercase tracking-wider">Blood</label>
-                  <input type="text" className="input-field py-3" placeholder="B+"
-                    value={newPatient.bloodGroup} onChange={(e) => setNewPatient({...newPatient, bloodGroup: e.target.value})} />
-                </div>
+                <div><label className="text-xs font-medium text-slate-600 mb-1 block">Age</label><input className="input-field" type="number" placeholder="72" /></div>
+                <div><label className="text-xs font-medium text-slate-600 mb-1 block">Gender</label><select className="input-field"><option>Male</option><option>Female</option></select></div>
+                <div><label className="text-xs font-medium text-slate-600 mb-1 block">Blood Group</label><input className="input-field" placeholder="B+" /></div>
               </div>
-              <div>
-                <label className="block text-xs font-medium text-white/60 mb-1.5 uppercase tracking-wider">Medical Conditions</label>
-                <input type="text" className="input-field py-3" placeholder="Diabetes, Hypertension..." />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-white/60 mb-1.5 uppercase tracking-wider">Insurance Provider</label>
-                <input type="text" className="input-field py-3" placeholder="Star Health, Max Bupa..." />
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                <input type="checkbox" className="w-4 h-4 rounded bg-white/10 border-white/20 text-amber-500" />
-                <span className="text-xs text-amber-300">Enroll in Monthly Retainer Plan (₹5,000/month)</span>
-              </div>
-              <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setShowAddModal(false)} className="btn-glass flex-1 text-sm">Cancel</button>
-                <button type="submit" className="btn-primary flex-1 text-sm">Register Patient</button>
+              <div><label className="text-xs font-medium text-slate-600 mb-1 block">Medical Conditions</label><input className="input-field" placeholder="Diabetes, Hypertension..." /></div>
+              <div><label className="text-xs font-medium text-slate-600 mb-1 block">Insurance Provider</label><input className="input-field" placeholder="Star Health, Max Bupa..." /></div>
+              <label className="flex items-center gap-2 p-3 bg-indigo-50 rounded-lg border border-indigo-100 cursor-pointer">
+                <input type="checkbox" className="w-4 h-4 rounded border-slate-300 text-indigo-600" />
+                <span className="text-xs text-indigo-700 font-medium">Enroll in Monthly Retainer Plan (₹5,000/month)</span>
+              </label>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setShowAddModal(false)} className="btn-secondary flex-1">Cancel</button>
+                <button type="submit" className="btn-primary flex-1">Register Patient</button>
               </div>
             </form>
           </div>
