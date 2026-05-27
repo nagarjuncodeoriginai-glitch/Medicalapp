@@ -76,9 +76,9 @@ router.post('/login', async (req, res) => {
         token,
         user: {
           id: 'demo-doctor-001',
-          name: 'Zakir',
+          name: 'Brijesh',
           email: 'admin@clinic.com',
-          specialty: 'general',
+          specialty: 'geriatric',
           clinicName: 'LifeCare Clinic',
           plan: 'pro'
         }
