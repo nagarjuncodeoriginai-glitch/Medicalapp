@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiMail, FiLock, FiEye, FiEyeOff, FiZap, FiShield, FiCpu, FiActivity } from 'react-icons/fi';
+import { FiMail, FiLock, FiEye, FiEyeOff, FiZap, FiCheck } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
 
@@ -25,149 +25,102 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 30% 20%, rgba(99,102,241,0.15) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(168,85,247,0.1) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(59,130,246,0.05) 0%, transparent 70%)' }} />
-      
-      {/* Floating Orbs */}
-      <div className="absolute top-20 left-20 w-72 h-72 rounded-full animate-float" style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.2), transparent 70%)', filter: 'blur(40px)' }} />
-      <div className="absolute bottom-20 right-20 w-96 h-96 rounded-full animate-float" style={{ background: 'radial-gradient(circle, rgba(168,85,247,0.15), transparent 70%)', filter: 'blur(60px)', animationDelay: '3s' }} />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full animate-glow" style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.08), transparent 70%)' }} />
+    <div className="min-h-screen flex bg-white">
+      {/* Left Side - Branding */}
+      <div className="hidden lg:flex lg:w-[45%] flex-col justify-between p-12 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)' }}>
+        {/* Decorative circles */}
+        <div className="absolute top-20 -right-20 w-80 h-80 rounded-full bg-white/10 animate-float" />
+        <div className="absolute -bottom-20 -left-20 w-60 h-60 rounded-full bg-white/5" />
 
-      {/* Orbiting Dots */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px]">
-        <div className="absolute w-2 h-2 bg-indigo-400/60 rounded-full animate-orbit" />
-        <div className="absolute w-1.5 h-1.5 bg-violet-400/40 rounded-full animate-orbit" style={{ animationDuration: '30s', animationDirection: 'reverse' }} />
-        <div className="absolute w-1 h-1 bg-blue-400/50 rounded-full animate-orbit" style={{ animationDuration: '15s' }} />
-      </div>
-
-      {/* Grid Pattern */}
-      <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
-
-      <div className="w-full max-w-[900px] grid grid-cols-1 lg:grid-cols-2 gap-0 relative z-10 animate-in">
-        {/* Left - Features */}
-        <div className="hidden lg:flex flex-col justify-between card rounded-r-none border-r-0 p-10">
-          <div>
-            {/* Logo */}
-            <div className="flex items-center gap-3 mb-12">
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center animate-gradient" style={{ background: 'linear-gradient(135deg, #6366f1, #a855f7, #6366f1)', backgroundSize: '200% 200%' }}>
-                <FiZap className="text-white text-xl" />
-              </div>
-              <div>
-                <h1 className="text-lg font-bold text-white">CareAI Pro</h1>
-                <p className="text-[11px] text-white/40 font-medium tracking-wider">ELDER CARE • AI POWERED</p>
-              </div>
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-16">
+            <div className="w-11 h-11 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center">
+              <FiZap className="text-white text-xl" />
             </div>
-
-            <h2 className="text-3xl font-bold text-white leading-tight mb-4">
-              The Future of<br />
-              <span className="bg-gradient-to-r from-indigo-400 via-violet-400 to-purple-400 bg-clip-text text-transparent">Elder Care</span><br />
-              is Here
-            </h2>
-            <p className="text-white/40 text-sm leading-relaxed">
-              AI-powered platform that predicts health risks, prevents drug interactions, and automates care for elderly patients.
-            </p>
-          </div>
-
-          {/* Feature Grid */}
-          <div className="grid grid-cols-2 gap-3 mt-8">
-            {[
-              { icon: FiCpu, label: 'AI Drug Alerts', desc: 'Detects interactions' },
-              { icon: FiActivity, label: 'Risk Scoring', desc: 'Predicts fall risk' },
-              { icon: FiShield, label: 'Insurance AI', desc: 'Auto-claims filing' },
-              { icon: FiZap, label: 'Smart Schedule', desc: 'Optimises timing' },
-            ].map((f, i) => (
-              <div key={i} className="p-3 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-all group">
-                <f.icon className="text-indigo-400 mb-2 group-hover:scale-110 transition-transform" />
-                <p className="text-xs font-semibold text-white/80">{f.label}</p>
-                <p className="text-[10px] text-white/30">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Trust */}
-          <div className="mt-8 pt-6 border-t border-white/5">
-            <div className="flex items-center gap-3">
-              <div className="flex -space-x-2">
-                {['#6366f1','#8b5cf6','#a855f7','#ec4899'].map((c,i) => (
-                  <div key={i} className="w-8 h-8 rounded-full border-2 border-[#0f172a] flex items-center justify-center text-[9px] font-bold text-white" style={{ background: c }}>
-                    {['DR','MD','RN','AI'][i]}
-                  </div>
-                ))}
-              </div>
-              <p className="text-[11px] text-white/40">Trusted by <span className="text-white/70 font-semibold">2,500+</span> doctors</p>
+            <div>
+              <h1 className="text-xl font-bold text-white">CareAI Pro</h1>
+              <p className="text-xs text-white/60">AI-Powered Elder Care</p>
             </div>
           </div>
+
+          <h2 className="text-4xl font-bold text-white leading-tight mb-4">
+            Complete Care<br />for Your Elderly<br />Patients
+          </h2>
+          <p className="text-white/70 text-base leading-relaxed max-w-sm">
+            Manage appointments, medications, insurance, home care visits and monthly retainers — all powered by AI.
+          </p>
         </div>
 
-        {/* Right - Login Form */}
-        <div className="card rounded-3xl lg:rounded-l-none p-8 md:p-10 flex flex-col justify-center">
+        <div className="relative z-10 space-y-3">
+          {['AI Drug Interaction Alerts', 'Smart Appointment Scheduling', 'Insurance Claim Management', 'Home Care Visit Tracking', 'Monthly Retainer Billing'].map((f, i) => (
+            <div key={i} className="flex items-center gap-3 text-white/80">
+              <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                <FiCheck className="text-[10px]" />
+              </div>
+              <span className="text-sm">{f}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Right Side - Form */}
+      <div className="flex-1 flex items-center justify-center p-8">
+        <div className="w-full max-w-[400px]">
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #6366f1, #a855f7)' }}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)' }}>
               <FiZap className="text-white" />
             </div>
-            <span className="text-lg font-bold text-white">CareAI Pro</span>
+            <span className="text-lg font-bold text-gray-900">CareAI Pro</span>
           </div>
 
-          <h2 className="text-2xl font-bold text-white mb-1">Welcome back</h2>
-          <p className="text-white/40 text-sm mb-8">Sign in to your AI-powered clinic</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-1">Welcome back</h2>
+          <p className="text-gray-500 text-sm mb-8">Sign in to your clinic dashboard</p>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-[11px] font-semibold text-white/50 mb-2 uppercase tracking-wider">Email</label>
-              <div className="relative group">
-                <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-indigo-400 transition-colors" />
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+              <div className="relative">
+                <FiMail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
                 <input type="email" value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="input-field pl-11" placeholder="doctor@clinic.com" required />
+                  className="input-field pl-10" placeholder="doctor@clinic.com" required />
               </div>
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-white/50 mb-2 uppercase tracking-wider">Password</label>
-              <div className="relative group">
-                <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-indigo-400 transition-colors" />
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+              <div className="relative">
+                <FiLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
                 <input type={showPassword ? 'text' : 'password'} value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  className="input-field pl-11 pr-11" placeholder="••••••••" required />
+                  className="input-field pl-10 pr-10" placeholder="Enter password" required />
                 <button type="button" onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
-                  {showPassword ? <FiEyeOff /> : <FiEye />}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  {showPassword ? <FiEyeOff className="text-sm" /> : <FiEye className="text-sm" />}
                 </button>
               </div>
             </div>
 
-            <button type="submit" disabled={loading} className="btn-primary w-full justify-center py-4 text-base">
-              {loading ? (
-                <span className="flex items-center gap-2">
-                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Authenticating...
-                </span>
-              ) : (
-                <span className="flex items-center gap-2">
-                  <FiZap className="text-base" /> Sign In with AI
-                </span>
-              )}
+            <button type="submit" disabled={loading} className="btn-primary w-full justify-center py-3">
+              {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 
-          {/* Demo Info */}
-          <div className="mt-6 ai-glow rounded-2xl p-4">
-            <div className="relative z-10 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500/20 to-violet-500/20 flex items-center justify-center border border-indigo-500/20">
-                <FiZap className="text-indigo-400 text-xs" />
-              </div>
-              <div>
-                <p className="text-[11px] font-semibold text-white/70">AI Demo Mode</p>
-                <p className="text-[10px] text-white/40 mt-0.5 font-mono">admin@clinic.com / admin123</p>
-              </div>
-              <span className="ml-auto w-2 h-2 bg-emerald-400 rounded-full animate-pulse-soft" />
+          {/* Demo Box */}
+          <div className="mt-6 p-4 bg-indigo-50 border border-indigo-100 rounded-xl">
+            <div className="flex items-center gap-2 mb-1">
+              <FiZap className="text-indigo-600 text-xs" />
+              <span className="text-xs font-semibold text-indigo-700">Demo Access</span>
             </div>
+            <p className="text-[11px] text-gray-600">
+              Email: <code className="bg-white px-1.5 py-0.5 rounded text-indigo-700 font-mono">admin@clinic.com</code> / 
+              Password: <code className="bg-white px-1.5 py-0.5 rounded text-indigo-700 font-mono">admin123</code>
+            </p>
           </div>
 
-          <p className="text-center mt-6 text-sm text-white/30">
-            New here? <Link to="/register" className="text-indigo-400 font-semibold hover:text-indigo-300 transition-colors">Start Free Trial</Link>
+          <p className="text-center mt-6 text-sm text-gray-500">
+            New here? <Link to="/register" className="text-indigo-600 font-semibold hover:underline">Start Free Trial</Link>
           </p>
         </div>
       </div>
