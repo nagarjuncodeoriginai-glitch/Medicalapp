@@ -5,6 +5,7 @@ import api from '../utils/api';
 import { useApi } from '../hooks/useApi';
 import Loader from '../components/Loader';
 import EmptyState from '../components/EmptyState';
+import AIScheduleInsights from '../components/AIScheduleInsights';
 
 const timeSlots = [
   '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
@@ -121,6 +122,9 @@ export default function Appointments() {
           <p className="text-sm text-gray-500">Waiting</p>
         </div>
       </div>
+
+      {/* AI Schedule Insights */}
+      <AIScheduleInsights />
 
       {error && (
         <div className="rounded-xl bg-red-50 border border-red-100 text-red-700 px-4 py-3 text-sm">{error}</div>

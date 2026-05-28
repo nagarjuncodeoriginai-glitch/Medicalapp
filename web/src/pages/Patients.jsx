@@ -9,6 +9,7 @@ import api from '../utils/api';
 import { useApi } from '../hooks/useApi';
 import Loader from '../components/Loader';
 import EmptyState from '../components/EmptyState';
+import AIPatientRisk from '../components/AIPatientRisk';
 
 const emptyPatient = {
   name: '', phone: '', email: '', age: '', gender: 'male',
@@ -23,6 +24,7 @@ export default function Patients() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyPatient);
   const [submitting, setSubmitting] = useState(false);
+  const [riskPatient, setRiskPatient] = useState(null);
 
   // Debounce search input -> URL & query
   useEffect(() => {
@@ -219,6 +221,16 @@ export default function Patients() {
                 </span>
                 <div className="flex gap-2">
                   <button
+                    onClick={() => setRiskPatient(riskPatient?._id === p._id ? null : p)}
+                    className={`text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors ${
+                      riskPatient?._id === p._id
+                        ? 'bg-violet-100 text-violet-700'
+                        : 'bg-violet-50 text-violet-600 hover:bg-violet-100'
+                    }`}
+                  >
+                    <FiUser className="text-[10px]" /> AI Risk
+                  </button>
+                  <button
                     onClick={() => sendWhatsapp(p)}
                     className="text-xs bg-green-50 text-green-700 px-3 py-1.5 rounded-lg hover:bg-green-100 flex items-center gap-1"
                   >
@@ -226,6 +238,12 @@ export default function Patients() {
                   </button>
                 </div>
               </div>
+
+              {riskPatient?._id === p._id && (
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                  <AIPatientRisk patient={p} />
+                </div>
+              )}
             </div>
           ))}
         </div>

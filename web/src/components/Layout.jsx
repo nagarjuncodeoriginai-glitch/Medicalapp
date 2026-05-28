@@ -6,6 +6,7 @@ import {
 } from 'react-icons/fi';
 import { FaUserMd, FaStethoscope } from 'react-icons/fa';
 import { clearSession, getUser } from '../utils/auth';
+import AIChat from './AIChat';
 
 const navItems = [
   { path: '/', icon: FiHome, label: 'Dashboard' },
@@ -145,6 +146,9 @@ export default function Layout() {
           <Outlet />
         </main>
       </div>
+
+      {/* AI Assistant - floating on all pages */}
+      <AIChat />
     </div>
   );
 }

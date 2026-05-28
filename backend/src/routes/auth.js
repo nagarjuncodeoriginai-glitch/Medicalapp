@@ -17,7 +17,8 @@ function checkValidation(req, res) {
 }
 
 function signToken(userId) {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, {
+  const secret = process.env.JWT_SECRET || 'demo-fallback-secret-key-32chars!!';
+  return jwt.sign({ userId }, secret, {
     expiresIn: process.env.JWT_EXPIRY || '30d'
   });
 }
