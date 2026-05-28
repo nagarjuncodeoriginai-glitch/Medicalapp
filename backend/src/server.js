@@ -98,6 +98,7 @@ app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/whatsapp', require('./routes/whatsapp'));
 app.use('/api/medicines', require('./routes/medicines'));
 app.use('/api/uploads', require('./routes/uploads'));
+app.use('/api/ai', require('./routes/ai'));
 
 // Health check (DB-aware)
 app.get('/api/health', (req, res) => {

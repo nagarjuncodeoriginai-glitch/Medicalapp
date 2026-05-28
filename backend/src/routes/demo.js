@@ -340,21 +340,81 @@ router.get('/medicines', demoOnly, (req, res) => {
   ]);
 });
 
-// ==================== WHATSAPP ====================
-router.post('/whatsapp/send', demoOnly, (req, res) => {
-  res.json({ success: true, stubbed: true });
+// ==================== AI ====================
+router.post('/ai/chat', demoOnly, (req, res) => {
+  const ai = require('../services/aiService');
+  const messages = req.body.messages || [{ role: 'user', content: 'hello' }];
+  const response = ai.chat(messages).then ? undefined : '';
+  // Use sync demo response
+  const lastMsg = (messages[messages.length - 1]?.content || '').toLowerCase();
+  let reply = "I can help with diagnoses, prescriptions, drug interactions, risk scores, and scheduling. What do you need?";
+  if (lastMsg.includes('hello') || lastMsg.includes('hi')) reply = "Hello Doctor! I'm your AI clinical assistant. Ask me about diagnoses, prescriptions, drug interactions, patient risks, or scheduling optimization.";
+  if (lastMsg.includes('diagnos') || lastMsg.includes('fever') || lastMsg.includes('cough') || lastMsg.includes('pain')) reply = "Based on the symptoms:\n\n1. **Viral URI** (most likely) — supportive care\n2. **Allergic Rhinitis** — antihistamines\n3. **Bacterial Sinusitis** (if >10 days) — antibiotics\n\n⚠️ *AI suggestion — verify clinically.*";
+  if (lastMsg.includes('prescri') || lastMsg.includes('treatment') || lastMsg.includes('medicine')) reply = "**Suggested:**\n• Paracetamol 500mg 1-0-1 × 3d\n• Cetirizine 10mg 0-0-1 × 5d\n• Steam inhalation TID\n\n⚠️ *Check allergies before prescribing.*";
+  if (lastMsg.includes('risk') || lastMsg.includes('score')) reply = "**Risk Score: 6/10 (Moderate)**\n\nFactors: Age >45, irregular visits, elevated BMI.\nAction: Quarterly reviews, lipid panel, lifestyle changes.";
+  if (lastMsg.includes('schedul') || lastMsg.includes('optimi')) reply = "**Schedule Insights:**\n• Peak: 10-12 PM\n• 2 no-show risks\n• Keep emergency buffer at 10:30 & 2:30\n• Best day for procedures: Wednesday";
+  res.json({ response: reply, provider: 'demo', timestamp: new Date().toISOString() });
 });
 
-router.post('/whatsapp/remind', demoOnly, (req, res) => {
-  res.json({ success: true, stubbed: true });
+router.post('/ai/diagnose', demoOnly, (req, res) => {
+  res.json({
+    diagnoses: [
+      { condition: 'Viral Upper Respiratory Infection', probability: 'high', icd10: 'J06.9', reasoning: 'Acute onset, self-limiting', investigations: ['CBC', 'CRP if persistent'], redFlags: ['Breathing difficulty', 'High fever >5 days'] },
+      { condition: 'Allergic Rhinitis', probability: 'medium', icd10: 'J30.4', reasoning: 'Seasonal pattern', investigations: ['IgE levels'], redFlags: [] },
+      { condition: 'Acute Sinusitis', probability: 'low', icd10: 'J01.9', reasoning: 'If symptoms >10 days', investigations: ['CT sinuses if recurrent'], redFlags: ['Orbital swelling', 'Severe headache'] }
+    ],
+    urgency: 'routine',
+    provider: 'demo'
+  });
 });
 
-router.post('/whatsapp/prescription', demoOnly, (req, res) => {
-  res.json({ success: true, stubbed: true });
+router.post('/ai/prescribe', demoOnly, (req, res) => {
+  res.json({
+    medicines: [
+      { name: 'Paracetamol', dosage: '500mg', frequency: '1-0-1', duration: '3 days', timing: 'after-food', notes: 'For fever/pain' },
+      { name: 'Cetirizine', dosage: '10mg', frequency: '0-0-1', duration: '5 days', timing: 'bedtime', notes: 'For congestion' },
+      { name: 'Amoxicillin', dosage: '500mg', frequency: '1-1-1', duration: '5 days', timing: 'after-food', notes: 'Only if bacterial suspected' }
+    ],
+    warnings: ['Check for penicillin allergy before Amoxicillin'],
+    interactions: [],
+    advice: 'Rest, hydration, steam inhalation. Return if no improvement in 5 days.',
+    provider: 'demo'
+  });
 });
 
-router.post('/whatsapp/run-reminders', demoOnly, (req, res) => {
-  res.json({ processed: 2, sent: 2 });
+router.post('/ai/risk-score', demoOnly, (req, res) => {
+  res.json({
+    riskScore: 6,
+    riskLevel: 'moderate',
+    factors: ['Age > 45', 'Hypertension', 'Irregular follow-ups', 'BMI > 25'],
+    recommendations: ['Quarterly BP monitoring', 'Lipid panel', 'Lifestyle modification counseling'],
+    predictedNoShowProbability: 15,
+    suggestedFollowUp: '2 weeks',
+    provider: 'demo'
+  });
+});
+
+router.post('/ai/optimize-schedule', demoOnly, (req, res) => {
+  res.json({
+    insights: { predictedLoad: 20, peakHours: ['10:00-12:00'], suggestedBreaks: ['13:00-14:00'], noShowRisk: ['Token #4', 'Token #7'] },
+    optimizations: ['Move follow-ups to afternoon', 'Keep 2 emergency buffers', 'Wednesday best for procedures'],
+    suggestedSlots: { emergencyBuffer: ['10:30', '14:30'], followUps: ['15:00-17:00'], newPatients: ['09:00-10:00'] },
+    provider: 'demo'
+  });
+});
+
+router.post('/ai/summarize-notes', demoOnly, (req, res) => {
+  res.json({
+    soap: { subjective: 'Patient reports ' + (req.body.text || 'symptoms'), objective: 'Vitals WNL, no acute distress', assessment: 'Stable, improving', plan: 'Continue meds, f/u 1 week' },
+    icd10Suggestions: [{ code: 'J06.9', description: 'Acute upper respiratory infection' }, { code: 'R50.9', description: 'Fever, unspecified' }],
+    keyFindings: ['No red flags', 'Responding to treatment'],
+    followUpSuggested: '7 days',
+    provider: 'demo'
+  });
+});
+
+router.get('/ai/status', demoOnly, (req, res) => {
+  res.json({ provider: 'demo', available: true, features: ['chat', 'diagnosis', 'prescription', 'risk-scoring', 'schedule-optimization', 'notes-summarization'] });
 });
 
 module.exports = router;

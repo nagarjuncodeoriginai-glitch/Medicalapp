@@ -6,6 +6,8 @@ import api from '../utils/api';
 import { useApi } from '../hooks/useApi';
 import Loader from '../components/Loader';
 import EmptyState from '../components/EmptyState';
+import AIPrescriptionHelper from '../components/AIPrescriptionHelper';
+import VoiceNotes from '../components/VoiceNotes';
 
 const emptyMed = { name: '', dosage: '', frequency: '', duration: '', timing: 'after-food' };
 
@@ -257,6 +259,22 @@ export default function Prescriptions() {
                 </div>
               </div>
 
+              {/* AI Prescription Assistant */}
+              <AIPrescriptionHelper
+                patientAge={patients.find((p) => p._id === form.patientId)?.age}
+                patientAllergies={patients.find((p) => p._id === form.patientId)?.allergies}
+                onAddMedicines={(meds) => {
+                  setForm((f) => ({
+                    ...f,
+                    medicines: [
+                      ...f.medicines.filter((m) => m.name?.trim()),
+                      ...meds
+                    ]
+                  }));
+                  toast.success(`Added ${meds.length} medicine${meds.length > 1 ? 's' : ''} from AI`);
+                }}
+              />
+
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-sm font-semibold text-gray-700">Medicines</label>
@@ -315,6 +333,15 @@ export default function Prescriptions() {
                   onChange={(e) => setForm({ ...form, advice: e.target.value })}
                 />
               </div>
+
+              {/* Voice-to-Text for clinical notes */}
+              <VoiceNotes
+                onInsertText={(text) => {
+                  setForm((f) => ({ ...f, advice: f.advice ? f.advice + '\n\n' + text : text }));
+                  toast.success('Notes inserted into advice field');
+                }}
+              />
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Follow-up Date</label>
                 <input
