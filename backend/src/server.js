@@ -85,7 +85,10 @@ mongoose
     app.locals.dbConnected = false;
   });
 
-// Routes
+// Demo mode routes (MUST come BEFORE real routes so they intercept when DB is unavailable)
+app.use('/api', require('./routes/demo'));
+
+// Real routes (used when MongoDB IS connected)
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/patients', require('./routes/patients'));
 app.use('/api/appointments', require('./routes/appointments'));
@@ -95,9 +98,6 @@ app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/whatsapp', require('./routes/whatsapp'));
 app.use('/api/medicines', require('./routes/medicines'));
 app.use('/api/uploads', require('./routes/uploads'));
-
-// Demo fallback routes (when MongoDB is not available)
-app.use('/api', require('./routes/demo'));
 
 // Health check (DB-aware)
 app.get('/api/health', (req, res) => {
