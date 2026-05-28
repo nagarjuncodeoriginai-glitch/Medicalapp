@@ -3,34 +3,44 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
 import Dashboard from './pages/Dashboard';
 import Patients from './pages/Patients';
 import Appointments from './pages/Appointments';
 import Prescriptions from './pages/Prescriptions';
 import Billing from './pages/Billing';
 import Settings from './pages/Settings';
+import NotFound from './pages/NotFound';
 import Layout from './components/Layout';
+import { isLoggedIn } from './utils/auth';
 
 function ProtectedRoute({ children }) {
-  const token = localStorage.getItem('token');
-  if (!token) return <Navigate to="/login" />;
-  return children;
+  return isLoggedIn() ? children : <Navigate to="/login" replace />;
 }
 
-function App() {
+function PublicOnly({ children }) {
+  return isLoggedIn() ? <Navigate to="/" replace /> : children;
+}
+
+export default function App() {
   return (
     <Router>
-      <Toaster position="top-right" toastOptions={{
-        style: { borderRadius: '12px', background: '#333', color: '#fff' }
-      }} />
+      <Toaster
+        position="top-right"
+        toastOptions={{ style: { borderRadius: '12px', background: '#333', color: '#fff' } }}
+      />
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/" element={
-          <ProtectedRoute>
-            <Layout />
-          </ProtectedRoute>
-        }>
+        <Route path="/login" element={<PublicOnly><Login /></PublicOnly>} />
+        <Route path="/register" element={<PublicOnly><Register /></PublicOnly>} />
+        <Route path="/forgot-password" element={<PublicOnly><ForgotPassword /></PublicOnly>} />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<Dashboard />} />
           <Route path="patients" element={<Patients />} />
           <Route path="appointments" element={<Appointments />} />
@@ -38,9 +48,8 @@ function App() {
           <Route path="billing" element={<Billing />} />
           <Route path="settings" element={<Settings />} />
         </Route>
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );
 }
-
-export default App;
