@@ -85,6 +85,21 @@ npx expo start
 # (e.g. EXPO_PUBLIC_API_URL=http://192.168.1.50:5000/api npx expo start)
 ```
 
+## Demo data (one command)
+
+After the backend is configured and MongoDB is running:
+
+```bash
+npm run seed                # creates demo doctor + sample data
+npm run seed -- --reset     # also wipes and reseeds the demo doctor's data
+```
+
+Then log in with:
+- **Email:** `demo@docclinic.com`
+- **Password:** `demo1234`
+
+The seed creates 5 patients, 6 appointments (today + tomorrow), 3 prescriptions, 4 bills, and a 5-medicine library, so the dashboard, queue, and revenue chart all populate immediately.
+
 ## Quick Start (Docker)
 
 ```bash

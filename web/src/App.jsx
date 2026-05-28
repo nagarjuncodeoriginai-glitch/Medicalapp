@@ -22,9 +22,15 @@ function PublicOnly({ children }) {
   return isLoggedIn() ? <Navigate to="/" replace /> : children;
 }
 
+// Opt in to React Router v7 behavior now to silence the deprecation warnings.
+const routerFutureFlags = {
+  v7_startTransition: true,
+  v7_relativeSplatPath: true
+};
+
 export default function App() {
   return (
-    <Router>
+    <Router future={routerFutureFlags}>
       <Toaster
         position="top-right"
         toastOptions={{ style: { borderRadius: '12px', background: '#333', color: '#fff' } }}

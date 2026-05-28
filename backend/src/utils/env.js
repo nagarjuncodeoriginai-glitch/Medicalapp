@@ -5,11 +5,14 @@ const REQUIRED = ['MONGODB_URI', 'JWT_SECRET'];
 function validateEnv() {
   const missing = REQUIRED.filter((key) => !process.env[key]);
   if (missing.length) {
+    // Loud, actionable message - this is the #1 cause of "500 on /auth/login"
+    logger.error('====================================================================');
     logger.error(`Missing required env vars: ${missing.join(', ')}`);
+    logger.error('Fix: cp backend/.env.example backend/.env  and fill in the values.');
+    logger.error('Then restart the API. The /api/auth routes will keep failing until then.');
+    logger.error('====================================================================');
     if (process.env.NODE_ENV === 'production') {
       process.exit(1);
-    } else {
-      logger.warn('Continuing in non-production mode with missing env vars. Do NOT deploy like this.');
     }
   }
   if (process.env.JWT_SECRET && process.env.JWT_SECRET.length < 16) {
