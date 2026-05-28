@@ -72,10 +72,18 @@ if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 app.use('/uploads', express.static(uploadDir));
 
 // MongoDB
+const MONGO_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/doctor-clinic';
 mongoose
-  .connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/doctor-clinic')
-  .then(() => logger.info('MongoDB connected'))
-  .catch((err) => logger.error(`MongoDB connection error: ${err.message}`));
+  .connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 })
+  .then(() => {
+    logger.info('MongoDB connected');
+    app.locals.dbConnected = true;
+  })
+  .catch((err) => {
+    logger.warn(`MongoDB not available: ${err.message}`);
+    logger.warn('Running in DEMO MODE — using in-memory dummy data. No data will persist.');
+    app.locals.dbConnected = false;
+  });
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
@@ -88,14 +96,18 @@ app.use('/api/whatsapp', require('./routes/whatsapp'));
 app.use('/api/medicines', require('./routes/medicines'));
 app.use('/api/uploads', require('./routes/uploads'));
 
+// Demo fallback routes (when MongoDB is not available)
+app.use('/api', require('./routes/demo'));
+
 // Health check (DB-aware)
 app.get('/api/health', (req, res) => {
-  const dbState = mongoose.connection.readyState; // 0 disconnected, 1 connected, 2 connecting, 3 disconnecting
+  const dbState = mongoose.connection.readyState;
   const states = ['disconnected', 'connected', 'connecting', 'disconnecting'];
-  const healthy = dbState === 1;
-  res.status(healthy ? 200 : 503).json({
-    status: healthy ? 'OK' : 'DEGRADED',
-    db: states[dbState] || 'unknown',
+  const demoMode = !app.locals.dbConnected;
+  res.status(200).json({
+    status: demoMode ? 'DEMO_MODE' : (dbState === 1 ? 'OK' : 'DEGRADED'),
+    db: demoMode ? 'not-connected (demo mode active)' : (states[dbState] || 'unknown'),
+    demoMode,
     uptime: process.uptime(),
     timestamp: new Date().toISOString()
   });
