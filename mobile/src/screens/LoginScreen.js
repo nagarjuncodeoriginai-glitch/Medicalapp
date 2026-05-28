@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  View, Text, TextInput, TouchableOpacity, StyleSheet,
+  SafeAreaView, Alert, KeyboardAvoidingView, Platform
+} from 'react-native';
+import api from '../utils/api';
+import { setSession } from '../utils/auth';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -14,13 +18,12 @@ export default function LoginScreen({ navigation }) {
     }
     setLoading(true);
     try {
-      // API call would go here
-      // const { data } = await api.post('/auth/login', { email, password });
-      await AsyncStorage.setItem('token', 'demo-token');
-      await AsyncStorage.setItem('user', JSON.stringify({ name: 'Doctor', email }));
+      const { data } = await api.post('/auth/login', { email, password });
+      await setSession(data.token, data.user);
       navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
     } catch (error) {
-      Alert.alert('Error', 'Invalid credentials');
+      const msg = error.response?.data?.message || 'Network error - check API URL';
+      Alert.alert('Login failed', msg);
     } finally {
       setLoading(false);
     }
@@ -28,8 +31,10 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.inner}>
-        {/* Logo */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.inner}
+      >
         <View style={styles.logoSection}>
           <View style={styles.logoIcon}>
             <Text style={styles.logoText}>DC</Text>
@@ -38,7 +43,6 @@ export default function LoginScreen({ navigation }) {
           <Text style={styles.subtitle}>Smart Clinic Management</Text>
         </View>
 
-        {/* Form */}
         <View style={styles.form}>
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Email</Text>
@@ -49,6 +53,7 @@ export default function LoginScreen({ navigation }) {
               onChangeText={setEmail}
               keyboardType="email-address"
               autoCapitalize="none"
+              autoComplete="email"
             />
           </View>
           <View style={styles.inputContainer}>
@@ -59,13 +64,20 @@ export default function LoginScreen({ navigation }) {
               value={password}
               onChangeText={setPassword}
               secureTextEntry
+              autoComplete="password"
             />
           </View>
-          <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
+          <TouchableOpacity
+            style={[styles.button, loading && { opacity: 0.7 }]}
+            onPress={handleLogin}
+            disabled={loading}
+          >
             <Text style={styles.buttonText}>{loading ? 'Signing in...' : 'Sign In'}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.linkContainer}>
-            <Text style={styles.link}>Don't have an account? <Text style={styles.linkBold}>Start Free Trial</Text></Text>
+            <Text style={styles.link}>
+              Don't have an account? <Text style={styles.linkBold}>Start Free Trial</Text>
+            </Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -77,17 +89,29 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   inner: { flex: 1, justifyContent: 'center', padding: 24 },
   logoSection: { alignItems: 'center', marginBottom: 40 },
-  logoIcon: { width: 70, height: 70, borderRadius: 20, backgroundColor: '#2563eb', justifyContent: 'center', alignItems: 'center', marginBottom: 16, shadowColor: '#2563eb', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 8 },
+  logoIcon: {
+    width: 70, height: 70, borderRadius: 20, backgroundColor: '#2563eb',
+    justifyContent: 'center', alignItems: 'center', marginBottom: 16,
+    shadowColor: '#2563eb', shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3, shadowRadius: 12, elevation: 8
+  },
   logoText: { color: '#fff', fontSize: 24, fontWeight: 'bold' },
   title: { fontSize: 28, fontWeight: 'bold', color: '#1f2937' },
   subtitle: { fontSize: 14, color: '#6b7280', marginTop: 4 },
   form: { gap: 16 },
   inputContainer: { gap: 6 },
   label: { fontSize: 14, fontWeight: '600', color: '#374151' },
-  input: { backgroundColor: '#f9fafb', borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 12, padding: 14, fontSize: 16 },
-  button: { backgroundColor: '#2563eb', borderRadius: 12, padding: 16, alignItems: 'center', marginTop: 8, shadowColor: '#2563eb', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 8, elevation: 6 },
+  input: {
+    backgroundColor: '#f9fafb', borderWidth: 1, borderColor: '#e5e7eb',
+    borderRadius: 12, padding: 14, fontSize: 16
+  },
+  button: {
+    backgroundColor: '#2563eb', borderRadius: 12, padding: 16, alignItems: 'center',
+    marginTop: 8, shadowColor: '#2563eb', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25, shadowRadius: 8, elevation: 6
+  },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
   linkContainer: { alignItems: 'center', marginTop: 16 },
   link: { color: '#6b7280', fontSize: 14 },
-  linkBold: { color: '#2563eb', fontWeight: '700' },
+  linkBold: { color: '#2563eb', fontWeight: '700' }
 });

@@ -1,50 +1,134 @@
-import React, { useState } from 'react';
-import { FiSearch, FiPlus, FiPhone, FiUser, FiX, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import {
+  FiSearch, FiPlus, FiPhone, FiUser, FiX, FiEdit2, FiTrash2, FiUsers
+} from 'react-icons/fi';
 import { FaWhatsapp } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import api from '../utils/api';
+import { useApi } from '../hooks/useApi';
+import Loader from '../components/Loader';
+import EmptyState from '../components/EmptyState';
 
-const demoPatients = [
-  { _id: '1', patientId: 'PAT-0001', name: 'Rahul Sharma', phone: '9876543210', age: 35, gender: 'male', bloodGroup: 'B+', totalVisits: 8, lastVisit: '2024-01-15', totalBilled: 12000 },
-  { _id: '2', patientId: 'PAT-0002', name: 'Priya Patel', phone: '9876543211', age: 28, gender: 'female', bloodGroup: 'A+', totalVisits: 3, lastVisit: '2024-01-14', totalBilled: 5500 },
-  { _id: '3', patientId: 'PAT-0003', name: 'Amit Kumar', phone: '9876543212', age: 45, gender: 'male', bloodGroup: 'O+', totalVisits: 12, lastVisit: '2024-01-13', totalBilled: 25000 },
-  { _id: '4', patientId: 'PAT-0004', name: 'Sneha Gupta', phone: '9876543213', age: 22, gender: 'female', bloodGroup: 'AB+', totalVisits: 2, lastVisit: '2024-01-12', totalBilled: 3000 },
-  { _id: '5', patientId: 'PAT-0005', name: 'Rajesh Iyer', phone: '9876543214', age: 55, gender: 'male', bloodGroup: 'A-', totalVisits: 15, lastVisit: '2024-01-11', totalBilled: 45000 },
-  { _id: '6', patientId: 'PAT-0006', name: 'Meera Singh', phone: '9876543215', age: 32, gender: 'female', bloodGroup: 'B-', totalVisits: 5, lastVisit: '2024-01-10', totalBilled: 8500 },
-];
+const emptyPatient = {
+  name: '', phone: '', email: '', age: '', gender: 'male',
+  bloodGroup: '', address: '', city: '', allergies: ''
+};
 
 export default function Patients() {
-  const [patients] = useState(demoPatients);
-  const [search, setSearch] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [search, setSearch] = useState(searchParams.get('search') || '');
+  const [debounced, setDebounced] = useState(search);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newPatient, setNewPatient] = useState({ name: '', phone: '', age: '', gender: 'male', bloodGroup: '', address: '' });
+  const [editing, setEditing] = useState(null);
+  const [form, setForm] = useState(emptyPatient);
+  const [submitting, setSubmitting] = useState(false);
 
-  const filtered = patients.filter(p =>
-    p.name.toLowerCase().includes(search.toLowerCase()) ||
-    p.phone.includes(search) ||
-    p.patientId.toLowerCase().includes(search.toLowerCase())
-  );
+  // Debounce search input -> URL & query
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebounced(search);
+      setSearchParams(search ? { search } : {}, { replace: true });
+    }, 300);
+    return () => clearTimeout(t);
+  }, [search, setSearchParams]);
 
-  const handleAdd = (e) => {
+  const url = useMemo(() => {
+    const params = new URLSearchParams();
+    if (debounced) params.set('search', debounced);
+    params.set('limit', '50');
+    return `/patients?${params.toString()}`;
+  }, [debounced]);
+
+  const { data, loading, error, refetch } = useApi(url);
+  const patients = data?.patients || [];
+
+  const openAdd = () => {
+    setEditing(null);
+    setForm(emptyPatient);
+    setShowAddModal(true);
+  };
+
+  const openEdit = (p) => {
+    setEditing(p);
+    setForm({
+      name: p.name || '',
+      phone: p.phone || '',
+      email: p.email || '',
+      age: p.age || '',
+      gender: p.gender || 'male',
+      bloodGroup: p.bloodGroup || '',
+      address: p.address || '',
+      city: p.city || '',
+      allergies: (p.allergies || []).join(', ')
+    });
+    setShowAddModal(true);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    toast.success('Patient added successfully!');
-    setShowAddModal(false);
-    setNewPatient({ name: '', phone: '', age: '', gender: 'male', bloodGroup: '', address: '' });
+    setSubmitting(true);
+    try {
+      const payload = {
+        ...form,
+        age: form.age ? Number(form.age) : undefined,
+        allergies: form.allergies
+          ? form.allergies.split(',').map((s) => s.trim()).filter(Boolean)
+          : []
+      };
+      if (editing) {
+        await api.put(`/patients/${editing._id}`, payload);
+        toast.success('Patient updated');
+      } else {
+        await api.post('/patients', payload);
+        toast.success('Patient added');
+      }
+      setShowAddModal(false);
+      refetch();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Save failed');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this patient? They will be hidden from your list.')) return;
+    try {
+      await api.delete(`/patients/${id}`);
+      toast.success('Patient deleted');
+      refetch();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Delete failed');
+    }
+  };
+
+  const sendWhatsapp = async (p) => {
+    try {
+      await api.post('/whatsapp/send', {
+        phone: p.phone,
+        message: `Hello ${p.name}, this is a message from your clinic.`
+      });
+      toast.success('WhatsApp message queued');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to send');
+    }
   };
 
   return (
     <div className="animate-fade-in space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Patients</h1>
-          <p className="text-gray-500 mt-1">{patients.length} total patients registered</p>
+          <p className="text-gray-500 mt-1">
+            {data ? `${data.total} total patient${data.total === 1 ? '' : 's'}` : 'Loading...'}
+          </p>
         </div>
-        <button onClick={() => setShowAddModal(true)} className="btn-primary flex items-center gap-2">
+        <button onClick={openAdd} className="btn-primary flex items-center gap-2">
           <FiPlus /> Add New Patient
         </button>
       </div>
 
-      {/* Search */}
       <div className="relative max-w-md">
         <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
         <input
@@ -53,97 +137,146 @@ export default function Patients() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="input-field pl-11"
+          aria-label="Search patients"
         />
       </div>
 
-      {/* Patient Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {filtered.map(patient => (
-          <div key={patient._id} className="card hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${patient.gender === 'male' ? 'bg-blue-100 text-blue-700' : 'bg-pink-100 text-pink-700'}`}>
-                  {patient.name.charAt(0)}
+      {error && (
+        <div className="rounded-xl bg-red-50 border border-red-100 text-red-700 px-4 py-3 text-sm">{error}</div>
+      )}
+
+      {loading ? (
+        <Loader label="Loading patients..." />
+      ) : patients.length === 0 ? (
+        <EmptyState
+          icon={FiUsers}
+          title={debounced ? 'No matching patients' : 'No patients yet'}
+          message={
+            debounced
+              ? 'Try a different search term.'
+              : 'Click "Add New Patient" to register your first patient.'
+          }
+          action={<button onClick={openAdd} className="btn-primary text-sm">Add Patient</button>}
+        />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {patients.map((p) => (
+            <div key={p._id} className="card hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${
+                      p.gender === 'male' ? 'bg-blue-100 text-blue-700' : 'bg-pink-100 text-pink-700'
+                    }`}
+                  >
+                    {p.name?.charAt(0)?.toUpperCase()}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{p.name}</h3>
+                    <p className="text-xs text-gray-500">{p.patientId}</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">{patient.name}</h3>
-                  <p className="text-xs text-gray-500">{patient.patientId}</p>
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => openEdit(p)}
+                    className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-blue-600"
+                    aria-label="Edit patient"
+                  >
+                    <FiEdit2 className="text-sm" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(p._id)}
+                    className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-red-600"
+                    aria-label="Delete patient"
+                  >
+                    <FiTrash2 className="text-sm" />
+                  </button>
                 </div>
               </div>
-              <div className="flex gap-1">
-                <button className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-blue-600">
-                  <FiEdit2 className="text-sm" />
-                </button>
-                <button className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-red-600">
-                  <FiTrash2 className="text-sm" />
-                </button>
+
+              <div className="grid grid-cols-2 gap-3 text-sm mb-4">
+                <div className="flex items-center gap-2 text-gray-600">
+                  <FiUser className="text-gray-400" />
+                  <span>{p.age ? `${p.age}y, ` : ''}{p.gender === 'male' ? 'M' : p.gender === 'female' ? 'F' : 'O'}</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-600">
+                  {p.bloodGroup && (
+                    <span className="text-xs font-medium bg-red-50 text-red-600 px-2 py-0.5 rounded">
+                      {p.bloodGroup}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 text-gray-600">
+                  <FiPhone className="text-gray-400" />
+                  <span>{p.phone}</span>
+                </div>
+                <div className="text-gray-600 text-xs">{p.totalVisits || 0} visits</div>
+              </div>
+
+              <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                <span className="text-sm font-semibold text-emerald-600">
+                  ₹{Number(p.totalBilled || 0).toLocaleString('en-IN')}
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => sendWhatsapp(p)}
+                    className="text-xs bg-green-50 text-green-700 px-3 py-1.5 rounded-lg hover:bg-green-100 flex items-center gap-1"
+                  >
+                    <FaWhatsapp /> Message
+                  </button>
+                </div>
               </div>
             </div>
+          ))}
+        </div>
+      )}
 
-            <div className="grid grid-cols-2 gap-3 text-sm mb-4">
-              <div className="flex items-center gap-2 text-gray-600">
-                <FiUser className="text-gray-400" />
-                <span>{patient.age}y, {patient.gender === 'male' ? 'M' : 'F'}</span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-600">
-                <span className="text-xs font-medium bg-red-50 text-red-600 px-2 py-0.5 rounded">{patient.bloodGroup}</span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-600">
-                <FiPhone className="text-gray-400" />
-                <span>{patient.phone}</span>
-              </div>
-              <div className="text-gray-600">
-                <span className="text-xs">{patient.totalVisits} visits</span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-              <span className="text-sm font-semibold text-emerald-600">&#8377;{patient.totalBilled.toLocaleString()}</span>
-              <div className="flex gap-2">
-                <button className="text-xs bg-green-50 text-green-700 px-3 py-1.5 rounded-lg hover:bg-green-100 flex items-center gap-1">
-                  <FaWhatsapp /> Message
-                </button>
-                <button className="text-xs bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-100">
-                  View
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Add Patient Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg p-6 animate-fade-in">
+          <div className="bg-white rounded-2xl w-full max-w-lg p-6 animate-fade-in max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Add New Patient</h2>
-              <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
+              <h2 className="text-xl font-bold text-gray-900">
+                {editing ? 'Edit Patient' : 'Add New Patient'}
+              </h2>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+                aria-label="Close"
+              >
                 <FiX className="text-xl" />
               </button>
             </div>
-            <form onSubmit={handleAdd} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                  <input type="text" className="input-field" placeholder="Patient name" required
-                    value={newPatient.name} onChange={(e) => setNewPatient({...newPatient, name: e.target.value})} />
+                  <input
+                    type="text" className="input-field" placeholder="Patient name" required
+                    value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Phone *</label>
-                  <input type="tel" className="input-field" placeholder="9876543210" required
-                    value={newPatient.phone} onChange={(e) => setNewPatient({...newPatient, phone: e.target.value})} />
+                  <input
+                    type="tel" className="input-field" placeholder="9876543210" required
+                    value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                  />
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Age</label>
-                  <input type="number" className="input-field" placeholder="25"
-                    value={newPatient.age} onChange={(e) => setNewPatient({...newPatient, age: e.target.value})} />
+                  <input
+                    type="number" min={0} max={150} className="input-field" placeholder="25"
+                    value={form.age} onChange={(e) => setForm({ ...form, age: e.target.value })}
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
-                  <select className="input-field" value={newPatient.gender} onChange={(e) => setNewPatient({...newPatient, gender: e.target.value})}>
+                  <select
+                    className="input-field"
+                    value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })}
+                  >
                     <option value="male">Male</option>
                     <option value="female">Female</option>
                     <option value="other">Other</option>
@@ -151,18 +284,49 @@ export default function Patients() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Blood Group</label>
-                  <input type="text" className="input-field" placeholder="B+"
-                    value={newPatient.bloodGroup} onChange={(e) => setNewPatient({...newPatient, bloodGroup: e.target.value})} />
+                  <input
+                    type="text" className="input-field" placeholder="B+"
+                    value={form.bloodGroup} onChange={(e) => setForm({ ...form, bloodGroup: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input
+                    type="email" className="input-field" placeholder="patient@email.com"
+                    value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                  <input
+                    type="text" className="input-field" placeholder="Mumbai"
+                    value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })}
+                  />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                <input type="text" className="input-field" placeholder="Full address"
-                  value={newPatient.address} onChange={(e) => setNewPatient({...newPatient, address: e.target.value})} />
+                <input
+                  type="text" className="input-field" placeholder="Full address"
+                  value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Allergies (comma-separated)</label>
+                <input
+                  type="text" className="input-field" placeholder="Penicillin, Aspirin"
+                  value={form.allergies} onChange={(e) => setForm({ ...form, allergies: e.target.value })}
+                />
               </div>
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setShowAddModal(false)} className="btn-secondary flex-1">Cancel</button>
-                <button type="submit" className="btn-primary flex-1">Add Patient</button>
+                <button type="button" onClick={() => setShowAddModal(false)} className="btn-secondary flex-1">
+                  Cancel
+                </button>
+                <button type="submit" disabled={submitting} className="btn-primary flex-1">
+                  {submitting ? 'Saving...' : editing ? 'Update Patient' : 'Add Patient'}
+                </button>
               </div>
             </form>
           </div>
