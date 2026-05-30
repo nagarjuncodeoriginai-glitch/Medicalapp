@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import {
-  FiSearch, FiPlus, FiPhone, FiUser, FiX, FiEdit2, FiTrash2, FiUsers
+  FiSearch, FiPlus, FiPhone, FiUser, FiX, FiEdit2, FiTrash2, FiUsers,
+  FiDownload, FiExternalLink
 } from 'react-icons/fi';
 import { FaWhatsapp } from 'react-icons/fa';
 import toast from 'react-hot-toast';
@@ -174,7 +175,9 @@ export default function Patients() {
                     {p.name?.charAt(0)?.toUpperCase()}
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">{p.name}</h3>
+                    <Link to={`/patients/${p._id}`} className="font-semibold text-gray-900 hover:text-blue-600 transition-colors cursor-pointer">
+                      {p.name}
+                    </Link>
                     <p className="text-xs text-gray-500">{p.patientId}</p>
                   </div>
                 </div>
@@ -220,6 +223,12 @@ export default function Patients() {
                   ₹{Number(p.totalBilled || 0).toLocaleString('en-IN')}
                 </span>
                 <div className="flex gap-2">
+                  <Link
+                    to={`/patients/${p._id}`}
+                    className="text-xs bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-100 flex items-center gap-1"
+                  >
+                    <FiExternalLink className="text-[10px]" /> View
+                  </Link>
                   <button
                     onClick={() => setRiskPatient(riskPatient?._id === p._id ? null : p)}
                     className={`text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors ${

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   FiPlus, FiSearch, FiEdit2, FiTrash2, FiX, FiActivity,
-  FiFilter, FiCheckCircle, FiClock, FiChevronDown, FiUpload, FiFileText
+  FiFilter, FiCheckCircle, FiClock, FiChevronDown, FiUpload, FiFileText,
+  FiPaperclip, FiExternalLink
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
@@ -32,6 +33,8 @@ export default function LabTests() {
     patientId: '', name: '', category: '', instructions: ''
   });
   const [resultForm, setResultForm] = useState({ status: '', resultSummary: '' });
+  const reportInputRef = useRef(null);
+  const [uploadingReport, setUploadingReport] = useState(false);
 
 
   const queryParams = new URLSearchParams();
@@ -100,6 +103,29 @@ export default function LabTests() {
       refetch();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed');
+    }
+  };
+
+  const handleReportUpload = async (testId, file) => {
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      return toast.error('File too large. Max 10MB');
+    }
+    setUploadingReport(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const { data: uploadData } = await api.post('/uploads', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      // Attach report URL to the lab test
+      await api.put(`/labtests/${testId}`, { reportUrl: uploadData.url || uploadData.path });
+      toast.success('Report uploaded & attached');
+      refetch();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Upload failed');
+    } finally {
+      setUploadingReport(false);
     }
   };
 
@@ -235,6 +261,26 @@ export default function LabTests() {
                   <span className={`badge ${sc.class} flex items-center gap-1`}>
                     <StatusIcon className="text-xs" /> {sc.label}
                   </span>
+                  {test.reportUrl && (
+                    <a
+                      href={test.reportUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 rounded-lg hover:bg-emerald-50 text-emerald-600 transition-colors"
+                      title="View Report"
+                    >
+                      <FiExternalLink className="text-sm" />
+                    </a>
+                  )}
+                  <label className="p-2 rounded-lg hover:bg-purple-50 text-purple-600 transition-colors cursor-pointer" title="Upload Report">
+                    <FiPaperclip className="text-sm" />
+                    <input
+                      type="file"
+                      accept="image/*,.pdf,.doc,.docx"
+                      className="hidden"
+                      onChange={(e) => handleReportUpload(test._id, e.target.files?.[0])}
+                    />
+                  </label>
                   <button onClick={() => openResult(test)} className="p-2 rounded-lg hover:bg-blue-50 text-blue-600 transition-colors" title="Update">
                     <FiEdit2 className="text-sm" />
                   </button>

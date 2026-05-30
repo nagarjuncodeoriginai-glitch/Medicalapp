@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FiPlus, FiFileText, FiPrinter, FiX, FiTrash2 } from 'react-icons/fi';
+import { FiPlus, FiFileText, FiPrinter, FiX, FiTrash2, FiDownload, FiSave, FiBookOpen } from 'react-icons/fi';
 import { FaWhatsapp } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
@@ -8,6 +8,7 @@ import Loader from '../components/Loader';
 import EmptyState from '../components/EmptyState';
 import AIPrescriptionHelper from '../components/AIPrescriptionHelper';
 import VoiceNotes from '../components/VoiceNotes';
+import PrintPrescription from '../components/PrintPrescription';
 
 const emptyMed = { name: '', dosage: '', frequency: '', duration: '', timing: 'after-food' };
 
@@ -18,6 +19,8 @@ export default function Prescriptions() {
   const patients = patientsData?.patients || [];
 
   const [showAddModal, setShowAddModal] = useState(false);
+  const [printRx, setPrintRx] = useState(null);
+  const [showTemplates, setShowTemplates] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     patientId: '', diagnosis: '', advice: '', followUpDate: '',
@@ -81,6 +84,39 @@ export default function Prescriptions() {
       toast.error(err.response?.data?.message || 'Failed to send');
     }
   };
+
+  const saveAsTemplate = async () => {
+    const templateName = prompt('Enter template name (e.g. "Fever Basic", "Diabetes Follow-up"):');
+    if (!templateName?.trim()) return;
+    try {
+      await api.post('/prescriptions', {
+        ...form,
+        patientId: form.patientId || undefined,
+        isTemplate: true,
+        templateName: templateName.trim(),
+        medicines: form.medicines.filter(m => m.name?.trim())
+      });
+      toast.success(`Template "${templateName}" saved!`);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to save template');
+    }
+  };
+
+  const loadTemplate = (tpl) => {
+    setForm(f => ({
+      ...f,
+      diagnosis: tpl.diagnosis || f.diagnosis,
+      advice: tpl.advice || f.advice,
+      medicines: tpl.medicines?.length ? tpl.medicines.map(m => ({
+        name: m.name || '', dosage: m.dosage || '', frequency: m.frequency || '',
+        duration: m.duration || '', timing: m.timing || 'after-food'
+      })) : f.medicines
+    }));
+    setShowTemplates(false);
+    toast.success('Template loaded');
+  };
+
+  const { data: templateData } = useApi('/prescriptions?isTemplate=true&limit=20');
 
   return (
     <div className="animate-fade-in space-y-6">
@@ -147,7 +183,7 @@ export default function Prescriptions() {
                     <FaWhatsapp />
                   </button>
                   <button
-                    onClick={() => window.print()}
+                    onClick={() => setPrintRx(rx)}
                     className="p-2 bg-blue-50 rounded-lg text-blue-600 hover:bg-blue-100"
                     title="Print"
                     aria-label="Print"
@@ -195,14 +231,44 @@ export default function Prescriptions() {
           <div className="bg-white rounded-2xl w-full max-w-2xl p-6 animate-fade-in my-8 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900">Create Prescription</h2>
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg"
-                aria-label="Close"
-              >
-                <FiX className="text-xl" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowTemplates(!showTemplates)}
+                  className="text-xs bg-purple-50 text-purple-700 px-3 py-1.5 rounded-lg hover:bg-purple-100 flex items-center gap-1 font-medium"
+                >
+                  <FiBookOpen className="text-sm" /> Templates
+                </button>
+                <button
+                  onClick={() => setShowAddModal(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg"
+                  aria-label="Close"
+                >
+                  <FiX className="text-xl" />
+                </button>
+              </div>
             </div>
+            {showTemplates && (
+              <div className="mb-4 p-3 bg-purple-50 rounded-xl border border-purple-100">
+                <p className="text-xs font-semibold text-purple-700 mb-2">Load a saved template:</p>
+                {(templateData?.prescriptions || []).length === 0 ? (
+                  <p className="text-xs text-gray-500">No templates saved yet. Create a prescription and save it as a template.</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {(templateData?.prescriptions || []).map(tpl => (
+                      <button
+                        key={tpl._id}
+                        type="button"
+                        onClick={() => loadTemplate(tpl)}
+                        className="text-xs bg-white text-purple-700 px-3 py-1.5 rounded-lg border border-purple-200 hover:bg-purple-100 font-medium"
+                      >
+                        {tpl.templateName || tpl.diagnosis || 'Unnamed'}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
             <form onSubmit={submit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -355,6 +421,13 @@ export default function Prescriptions() {
                 <button type="button" onClick={() => setShowAddModal(false)} className="btn-secondary flex-1">
                   Cancel
                 </button>
+                <button
+                  type="button"
+                  onClick={saveAsTemplate}
+                  className="flex items-center justify-center gap-1 px-4 py-2.5 rounded-xl border border-purple-200 text-purple-700 font-semibold text-sm hover:bg-purple-50 transition-colors"
+                >
+                  <FiSave /> Save Template
+                </button>
                 <button type="submit" disabled={submitting} className="btn-primary flex-1">
                   {submitting ? 'Saving...' : 'Create Prescription'}
                 </button>
@@ -363,6 +436,8 @@ export default function Prescriptions() {
           </div>
         </div>
       )}
+
+      {printRx && <PrintPrescription prescription={printRx} onClose={() => setPrintRx(null)} />}
     </div>
   );
 }

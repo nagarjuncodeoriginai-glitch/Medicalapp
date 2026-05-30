@@ -7,6 +7,7 @@ import {
 } from 'react-icons/fi';
 import { FaUserMd, FaStethoscope, FaHeartbeat } from 'react-icons/fa';
 import { clearSession, getUser } from '../utils/auth';
+import { useDarkMode } from '../hooks/useDarkMode';
 import AIChat from './AIChat';
 import NotificationCenter from './NotificationCenter';
 
@@ -26,7 +27,7 @@ export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, toggleDark] = useDarkMode();
   const navigate = useNavigate();
   const location = useLocation();
   const user = getUser();
@@ -42,9 +43,8 @@ export default function Layout() {
     navigate(`/patients?search=${encodeURIComponent(search.trim())}`);
   };
 
-  const toggleDark = () => {
-    setDarkMode(!darkMode);
-    document.documentElement.classList.toggle('dark');
+  const toggleDarkMode = () => {
+    toggleDark();
   };
 
   const getPageTitle = () => {
@@ -176,7 +176,7 @@ export default function Layout() {
           <div className="flex items-center gap-2">
             {/* Dark mode toggle */}
             <button
-              onClick={toggleDark}
+              onClick={toggleDarkMode}
               className="p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               aria-label="Toggle dark mode"
             >

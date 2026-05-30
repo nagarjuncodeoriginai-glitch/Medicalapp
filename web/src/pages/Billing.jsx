@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import { FiPlus, FiX, FiPrinter, FiTrash2, FiDollarSign } from 'react-icons/fi';
+import { FiPlus, FiX, FiPrinter, FiTrash2, FiDollarSign, FiDownload } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
 import { useApi } from '../hooks/useApi';
 import Loader from '../components/Loader';
 import EmptyState from '../components/EmptyState';
+import PrintInvoice from '../components/PrintInvoice';
 
 const statusStyles = {
   paid: 'bg-emerald-100 text-emerald-700',
@@ -24,6 +25,7 @@ export default function Billing() {
   const patients = patientsData?.patients || [];
 
   const [showAddModal, setShowAddModal] = useState(false);
+  const [printBill, setPrintBill] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     patientId: '', items: [{ description: '', amount: '', quantity: 1 }],
@@ -96,6 +98,28 @@ export default function Billing() {
     }
   };
 
+  const exportBillingCSV = (bills) => {
+    const headers = ['Invoice No', 'Patient', 'Date', 'Amount', 'Paid', 'Status', 'Method'];
+    const rows = bills.map(b => [
+      b.invoiceNo || '',
+      b.patientId?.name || '',
+      new Date(b.createdAt).toLocaleDateString('en-IN'),
+      b.totalAmount || 0,
+      b.paidAmount || 0,
+      b.paymentStatus || '',
+      b.paymentMethod || ''
+    ]);
+    const csv = [headers, ...rows].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `billing-export-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('CSV exported');
+  };
+
   return (
     <div className="animate-fade-in space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -103,9 +127,16 @@ export default function Billing() {
           <h1 className="text-2xl font-bold text-gray-900">Billing</h1>
           <p className="text-gray-500 mt-1">Manage invoices and payments</p>
         </div>
-        <button onClick={() => setShowAddModal(true)} className="btn-primary flex items-center gap-2">
-          <FiPlus /> Create Invoice
-        </button>
+        <div className="flex gap-2">
+          {bills.length > 0 && (
+            <button onClick={() => exportBillingCSV(bills)} className="btn-secondary flex items-center gap-2 text-sm">
+              <FiDownload /> Export CSV
+            </button>
+          )}
+          <button onClick={() => setShowAddModal(true)} className="btn-primary flex items-center gap-2">
+            <FiPlus /> Create Invoice
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -186,7 +217,7 @@ export default function Billing() {
                     <td className="py-3 px-4">
                       <div className="flex gap-2">
                         <button
-                          onClick={() => window.print()}
+                          onClick={() => setPrintBill(bill)}
                           className="p-2 bg-blue-50 rounded-lg text-blue-600 hover:bg-blue-100"
                           aria-label="Print"
                         >
@@ -331,6 +362,7 @@ export default function Billing() {
           </div>
         </div>
       )}
+      {printBill && <PrintInvoice invoice={printBill} onClose={() => setPrintBill(null)} />}
     </div>
   );
 }
