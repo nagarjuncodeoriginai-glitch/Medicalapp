@@ -417,4 +417,90 @@ router.get('/ai/status', demoOnly, (req, res) => {
   res.json({ provider: 'demo', available: true, features: ['chat', 'diagnosis', 'prescription', 'risk-scoring', 'schedule-optimization', 'notes-summarization'] });
 });
 
+// ==================== LAB TESTS ====================
+router.get('/labtests', demoOnly, (req, res) => {
+  res.json({ tests: [
+    { _id: 'lt-1', name: 'Complete Blood Count', category: 'Hematology', patientId: DEMO_PATIENTS[0], status: 'reported', resultSummary: 'All values within normal range', createdAt: new Date('2025-05-20') },
+    { _id: 'lt-2', name: 'Lipid Profile', category: 'Biochemistry', patientId: DEMO_PATIENTS[3], status: 'ordered', resultSummary: '', createdAt: new Date('2025-05-28') },
+    { _id: 'lt-3', name: 'HbA1c', category: 'Biochemistry', patientId: DEMO_PATIENTS[3], status: 'sample-collected', resultSummary: '', createdAt: new Date('2025-05-29') }
+  ], total: 3 });
+});
+
+router.post('/labtests', demoOnly, (req, res) => {
+  res.status(201).json({ _id: `lt-${Date.now()}`, ...req.body, status: 'ordered', createdAt: new Date() });
+});
+
+router.put('/labtests/:id', demoOnly, (req, res) => {
+  res.json({ _id: req.params.id, ...req.body, updatedAt: new Date() });
+});
+
+router.delete('/labtests/:id', demoOnly, (req, res) => {
+  res.json({ message: 'Lab test deleted' });
+});
+
+// ==================== EXPENSES ====================
+router.get('/expenses', demoOnly, (req, res) => {
+  res.json({ expenses: [
+    { _id: 'exp-1', category: 'rent', description: 'Monthly clinic rent', amount: 25000, date: new Date('2025-05-01'), vendor: 'Landlord', paymentMethod: 'online', isRecurring: true, recurringFrequency: 'monthly' },
+    { _id: 'exp-2', category: 'salary', description: 'Receptionist salary', amount: 18000, date: new Date('2025-05-01'), vendor: 'Staff', paymentMethod: 'online', isRecurring: true, recurringFrequency: 'monthly' },
+    { _id: 'exp-3', category: 'supplies', description: 'Gloves and masks', amount: 2500, date: new Date('2025-05-15'), vendor: 'MedSupply Co', paymentMethod: 'upi', isRecurring: false },
+    { _id: 'exp-4', category: 'utilities', description: 'Electricity bill', amount: 4500, date: new Date('2025-05-10'), vendor: 'MSEB', paymentMethod: 'online', isRecurring: true, recurringFrequency: 'monthly' }
+  ], total: 4 });
+});
+
+router.get('/expenses/summary', demoOnly, (req, res) => {
+  res.json({
+    thisMonth: 50000,
+    thisMonthCount: 4,
+    thisYear: 280000,
+    byCategory: [
+      { _id: 'rent', total: 150000, count: 6 },
+      { _id: 'salary', total: 108000, count: 6 },
+      { _id: 'supplies', total: 12000, count: 5 },
+      { _id: 'utilities', total: 10000, count: 3 }
+    ],
+    monthlyTrend: [
+      { _id: '2025-01', total: 45000, count: 4 },
+      { _id: '2025-02', total: 48000, count: 5 },
+      { _id: '2025-03', total: 43000, count: 3 },
+      { _id: '2025-04', total: 50000, count: 4 },
+      { _id: '2025-05', total: 50000, count: 4 }
+    ]
+  });
+});
+
+router.post('/expenses', demoOnly, (req, res) => {
+  res.status(201).json({ _id: `exp-${Date.now()}`, ...req.body, createdAt: new Date() });
+});
+
+router.put('/expenses/:id', demoOnly, (req, res) => {
+  res.json({ _id: req.params.id, ...req.body });
+});
+
+router.delete('/expenses/:id', demoOnly, (req, res) => {
+  res.json({ message: 'Expense deleted' });
+});
+
+// ==================== WHATSAPP ====================
+router.post('/whatsapp/send', demoOnly, (req, res) => {
+  res.json({ message: 'Message sent (demo mode)', sent: true });
+});
+
+router.post('/whatsapp/remind', demoOnly, (req, res) => {
+  res.json({ message: 'Reminder sent (demo mode)', sent: true });
+});
+
+router.post('/whatsapp/prescription', demoOnly, (req, res) => {
+  res.json({ message: 'Prescription shared (demo mode)', sent: true });
+});
+
+router.post('/whatsapp/run-reminders', demoOnly, (req, res) => {
+  res.json({ processed: 5, sent: 3, failed: 0 });
+});
+
+// ==================== UPLOADS ====================
+router.post('/uploads', demoOnly, (req, res) => {
+  res.json({ url: '/uploads/demo-file.pdf', filename: 'demo-file.pdf', size: 12345, mimetype: 'application/pdf' });
+});
+
 module.exports = router;
