@@ -11,6 +11,7 @@ import { useApi } from '../hooks/useApi';
 import Loader from '../components/Loader';
 import EmptyState from '../components/EmptyState';
 import AIPatientRisk from '../components/AIPatientRisk';
+import QuickWhatsApp from '../components/QuickWhatsApp';
 
 const emptyPatient = {
   name: '', phone: '', email: '', age: '', gender: 'male',
@@ -26,6 +27,7 @@ export default function Patients() {
   const [form, setForm] = useState(emptyPatient);
   const [submitting, setSubmitting] = useState(false);
   const [riskPatient, setRiskPatient] = useState(null);
+  const [whatsappPatient, setWhatsappPatient] = useState(null);
 
   // Debounce search input -> URL & query
   useEffect(() => {
@@ -266,7 +268,7 @@ export default function Patients() {
                     <FiUser className="text-[10px]" /> AI Risk
                   </button>
                   <button
-                    onClick={() => sendWhatsapp(p)}
+                    onClick={() => setWhatsappPatient(p)}
                     className="text-xs bg-green-50 text-green-700 px-3 py-1.5 rounded-lg hover:bg-green-100 flex items-center gap-1"
                   >
                     <FaWhatsapp /> Message
@@ -384,6 +386,10 @@ export default function Patients() {
             </form>
           </div>
         </div>
+      )}
+
+      {whatsappPatient && (
+        <QuickWhatsApp patient={whatsappPatient} onClose={() => setWhatsappPatient(null)} />
       )}
     </div>
   );

@@ -14,6 +14,7 @@ import Medicines from './pages/Medicines';
 import LabTests from './pages/LabTests';
 import Expenses from './pages/Expenses';
 import Reports from './pages/Reports';
+import FollowUps from './pages/FollowUps';
 import Settings from './pages/Settings';
 import DoctorProfile from './pages/DoctorProfile';
 import NotFound from './pages/NotFound';
@@ -67,6 +68,7 @@ export default function App() {
           <Route path="lab-tests" element={<LabTests />} />
           <Route path="expenses" element={<Expenses />} />
           <Route path="reports" element={<Reports />} />
+          <Route path="follow-ups" element={<FollowUps />} />
           <Route path="profile" element={<DoctorProfile />} />
           <Route path="settings" element={<Settings />} />
         </Route>

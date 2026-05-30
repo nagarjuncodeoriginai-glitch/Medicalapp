@@ -19,6 +19,8 @@ import AnimatedCounter from '../components/AnimatedCounter';
 import HealthMetricsWidget from '../components/HealthMetricsWidget';
 import AppointmentCalendar from '../components/AppointmentCalendar';
 import PatientTimeline from '../components/PatientTimeline';
+import ProfitLossWidget from '../components/ProfitLossWidget';
+import TodayScheduleWidget from '../components/TodayScheduleWidget';
 
 const greetingForHour = (h) => (h < 12 ? 'Good Morning' : h < 17 ? 'Good Afternoon' : 'Good Evening');
 
@@ -318,6 +320,14 @@ export default function Dashboard() {
           <div className="max-h-72 overflow-y-auto custom-scroll">
             <PatientTimeline events={demoTimeline} />
           </div>
+        </div>
+      </div>
+
+      {/* P&L + Schedule Widget row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <ProfitLossWidget />
+        <div className="lg:col-span-2">
+          <TodayScheduleWidget />
         </div>
       </div>
     </div>
