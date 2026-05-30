@@ -10,6 +10,7 @@ import Appointments from './pages/Appointments';
 import Prescriptions from './pages/Prescriptions';
 import Billing from './pages/Billing';
 import Settings from './pages/Settings';
+import DoctorProfile from './pages/DoctorProfile';
 import NotFound from './pages/NotFound';
 import Layout from './components/Layout';
 import { isLoggedIn } from './utils/auth';
@@ -52,6 +53,7 @@ export default function App() {
           <Route path="appointments" element={<Appointments />} />
           <Route path="prescriptions" element={<Prescriptions />} />
           <Route path="billing" element={<Billing />} />
+          <Route path="profile" element={<DoctorProfile />} />
           <Route path="settings" element={<Settings />} />
         </Route>
         <Route path="*" element={<NotFound />} />
