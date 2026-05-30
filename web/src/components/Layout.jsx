@@ -3,7 +3,7 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   FiHome, FiUsers, FiCalendar, FiFileText, FiDollarSign,
   FiSettings, FiLogOut, FiMenu, FiX, FiSearch, FiUser,
-  FiMoon, FiSun, FiChevronDown
+  FiMoon, FiSun, FiChevronDown, FiPackage, FiActivity
 } from 'react-icons/fi';
 import { FaUserMd, FaStethoscope, FaHeartbeat } from 'react-icons/fa';
 import { clearSession, getUser } from '../utils/auth';
@@ -15,6 +15,8 @@ const navItems = [
   { path: '/patients', icon: FiUsers, label: 'Patients' },
   { path: '/appointments', icon: FiCalendar, label: 'Appointments' },
   { path: '/prescriptions', icon: FiFileText, label: 'Prescriptions' },
+  { path: '/medicines', icon: FiPackage, label: 'Medicines' },
+  { path: '/lab-tests', icon: FiActivity, label: 'Lab Tests' },
   { path: '/billing', icon: FiDollarSign, label: 'Billing' },
   { path: '/profile', icon: FiUser, label: 'My Profile' },
   { path: '/settings', icon: FiSettings, label: 'Settings' }
