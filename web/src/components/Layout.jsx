@@ -3,7 +3,8 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   FiHome, FiUsers, FiCalendar, FiFileText, FiDollarSign,
   FiSettings, FiLogOut, FiMenu, FiX, FiSearch, FiUser,
-  FiMoon, FiSun, FiChevronDown, FiPackage, FiActivity
+  FiMoon, FiSun, FiChevronDown, FiPackage, FiActivity,
+  FiBarChart2, FiCreditCard
 } from 'react-icons/fi';
 import { FaUserMd, FaStethoscope, FaHeartbeat } from 'react-icons/fa';
 import { clearSession, getUser } from '../utils/auth';
@@ -19,6 +20,8 @@ const navItems = [
   { path: '/medicines', icon: FiPackage, label: 'Medicines' },
   { path: '/lab-tests', icon: FiActivity, label: 'Lab Tests' },
   { path: '/billing', icon: FiDollarSign, label: 'Billing' },
+  { path: '/expenses', icon: FiCreditCard, label: 'Expenses' },
+  { path: '/reports', icon: FiBarChart2, label: 'Reports' },
   { path: '/profile', icon: FiUser, label: 'My Profile' },
   { path: '/settings', icon: FiSettings, label: 'Settings' }
 ];
@@ -41,10 +44,6 @@ export default function Layout() {
     e.preventDefault();
     if (!search.trim()) return;
     navigate(`/patients?search=${encodeURIComponent(search.trim())}`);
-  };
-
-  const toggleDarkMode = () => {
-    toggleDark();
   };
 
   const getPageTitle = () => {
@@ -176,7 +175,7 @@ export default function Layout() {
           <div className="flex items-center gap-2">
             {/* Dark mode toggle */}
             <button
-              onClick={toggleDarkMode}
+              onClick={toggleDark}
               className="p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               aria-label="Toggle dark mode"
             >
