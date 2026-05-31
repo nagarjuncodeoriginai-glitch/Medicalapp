@@ -28,6 +28,9 @@ import { isLoggedIn } from './utils/auth';
 import SymptomChecker from './pages/portal/SymptomChecker';
 import BookAppointment from './pages/portal/BookAppointment';
 import MyRecords from './pages/portal/MyRecords';
+import HealthTips from './pages/portal/HealthTips';
+import MedicationReminder from './pages/portal/MedicationReminder';
+import TrackAppointment from './pages/portal/TrackAppointment';
 import Pricing from './pages/portal/Pricing';
 
 function ProtectedRoute({ children }) {
@@ -59,6 +62,10 @@ export default function App() {
         <Route path="/book/:doctorId" element={<BookAppointment />} />
         <Route path="/book" element={<BookAppointment />} />
         <Route path="/my-records" element={<MyRecords />} />
+        <Route path="/health-tips" element={<HealthTips />} />
+        <Route path="/my-medications" element={<MedicationReminder />} />
+        <Route path="/track/:appointmentId" element={<TrackAppointment />} />
+        <Route path="/track" element={<TrackAppointment />} />
         <Route path="/pricing" element={<Pricing />} />
 
         {/* Auth pages */}

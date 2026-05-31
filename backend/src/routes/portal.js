@@ -248,6 +248,136 @@ router.get(
   })
 );
 
+// AI Health Tips (public - personalized by condition)
+router.get(
+  '/health-tips',
+  asyncHandler(async (req, res) => {
+    const { condition, age, gender } = req.query;
+    const systemMsg = {
+      role: 'system',
+      content: `You are a health education AI. Generate 5 practical, evidence-based daily health tips. Respond ONLY in JSON:
+{
+  "tips": [
+    { "title": "short title", "content": "2-3 sentence practical advice", "category": "nutrition|exercise|sleep|mental|medication|lifestyle|prevention" }
+  ],
+  "dailyFact": "one interesting health fact",
+  "reminder": "one important health reminder for today"
+}`
+    };
+    const userMsg = {
+      role: 'user',
+      content: `Generate health tips for: ${condition || 'general wellness'}. Patient: ${age || 'adult'}y ${gender || ''}.`
+    };
+    const result = await ai.chat([systemMsg, userMsg], { json: true, temperature: 0.5 });
+    let parsed;
+    try { parsed = JSON.parse(result); } catch {
+      parsed = {
+        tips: [
+          { title: 'Stay Hydrated', content: 'Drink 8-10 glasses of water daily. Start your morning with a glass of warm water.', category: 'nutrition' },
+          { title: 'Walk 30 Minutes', content: 'A daily 30-minute walk reduces heart disease risk by 30% and improves mood significantly.', category: 'exercise' },
+          { title: 'Sleep Schedule', content: 'Maintain a consistent sleep schedule. 7-8 hours of quality sleep boosts immunity and focus.', category: 'sleep' },
+          { title: 'Portion Control', content: 'Use smaller plates to naturally reduce portions. Eat slowly — it takes 20 minutes for your brain to register fullness.', category: 'nutrition' },
+          { title: 'Stress Management', content: 'Practice deep breathing for 5 minutes daily. Inhale 4 counts, hold 4, exhale 6.', category: 'mental' }
+        ],
+        dailyFact: 'Your body contains about 60,000 miles of blood vessels — enough to circle the Earth twice.',
+        reminder: 'Have you taken your medications today? Set a daily alarm if needed.'
+      };
+    }
+    res.json({ ...parsed, provider: ai.getProvider() });
+  })
+);
+
+// Medication Reminders (lookup by phone)
+router.get(
+  '/medication-reminders',
+  asyncHandler(async (req, res) => {
+    const { phone } = req.query;
+    if (!phone) return res.status(400).json({ message: 'phone query param required' });
+
+    const patient = await Patient.findOne({ phone });
+    if (!patient) return res.status(404).json({ message: 'No records found' });
+
+    const Prescription = require('../models/Prescription');
+    const recentRx = await Prescription.find({ patientId: patient._id })
+      .sort({ createdAt: -1 })
+      .limit(3);
+
+    // Build active medication schedule
+    const activeMeds = [];
+    for (const rx of recentRx) {
+      for (const med of (rx.medicines || [])) {
+        activeMeds.push({
+          name: med.name,
+          dosage: med.dosage || '',
+          frequency: med.frequency || '',
+          duration: med.duration || '',
+          timing: med.timing || 'after-food',
+          diagnosis: rx.diagnosis || '',
+          prescribedDate: rx.createdAt,
+          prescriptionNo: rx.prescriptionNo
+        });
+      }
+    }
+
+    res.json({
+      patient: { name: patient.name, patientId: patient.patientId },
+      medications: activeMeds,
+      totalActive: activeMeds.length
+    });
+  })
+);
+
+// Track appointment (live queue position)
+router.get(
+  '/track/:appointmentId',
+  asyncHandler(async (req, res) => {
+    const apt = await Appointment.findById(req.params.appointmentId)
+      .populate('doctorId', 'name clinicName specialty workingHours')
+      .populate('patientId', 'name phone');
+    if (!apt) return res.status(404).json({ message: 'Appointment not found' });
+
+    // Get today's queue to determine position
+    const dayStart = new Date(apt.date);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(apt.date);
+    dayEnd.setHours(23, 59, 59, 999);
+
+    const todayQueue = await Appointment.find({
+      doctorId: apt.doctorId._id,
+      date: { $gte: dayStart, $lte: dayEnd },
+      status: { $nin: ['cancelled', 'no-show'] }
+    }).sort({ tokenNumber: 1 });
+
+    const completed = todayQueue.filter(a => a.status === 'completed').length;
+    const inProgress = todayQueue.find(a => a.status === 'in-progress');
+    const myPosition = todayQueue.findIndex(a => a._id.toString() === apt._id.toString()) + 1;
+    const patientsAhead = Math.max(0, myPosition - completed - (inProgress ? 1 : 0) - 1);
+    const estimatedWait = patientsAhead * 15; // ~15 min per patient
+
+    res.json({
+      appointment: {
+        id: apt._id,
+        tokenNumber: apt.tokenNumber,
+        date: apt.date,
+        timeSlot: apt.timeSlot,
+        status: apt.status,
+        type: apt.type
+      },
+      doctor: apt.doctorId,
+      patient: apt.patientId,
+      queue: {
+        totalToday: todayQueue.length,
+        completed,
+        currentToken: inProgress?.tokenNumber || null,
+        myToken: apt.tokenNumber,
+        myPosition,
+        patientsAhead,
+        estimatedWaitMinutes: estimatedWait
+      }
+    });
+  })
+);
+
 // Patient submits review
 router.post(
   '/review',

@@ -567,4 +567,44 @@ router.post('/portal/review', demoOnly, (req, res) => {
   res.json({ message: 'Review submitted successfully. Thank you!' });
 });
 
+router.get('/portal/health-tips', demoOnly, (req, res) => {
+  res.json({
+    tips: [
+      { title: 'Stay Hydrated', content: 'Drink 8-10 glasses of water daily. Start your morning with a glass of warm water to kick-start digestion.', category: 'nutrition' },
+      { title: 'Walk 30 Minutes', content: 'A daily 30-minute brisk walk reduces heart disease risk by 30% and boosts mood naturally.', category: 'exercise' },
+      { title: 'Fix Your Sleep', content: 'Go to bed and wake up at the same time daily. 7-8 hours of sleep improves immunity and mental clarity.', category: 'sleep' },
+      { title: 'Deep Breathing', content: 'Practice 5 minutes of box breathing daily: inhale 4 counts, hold 4, exhale 4. Reduces stress hormones immediately.', category: 'mental' },
+      { title: 'Eat More Fiber', content: 'Add one extra serving of vegetables to each meal. Fiber improves digestion and helps maintain healthy blood sugar.', category: 'nutrition' }
+    ],
+    dailyFact: 'Your heart beats approximately 100,000 times per day, pumping about 2,000 gallons of blood through 60,000 miles of blood vessels.',
+    reminder: 'Have you taken your medications today? Set a daily alarm to never miss a dose.',
+    provider: 'demo'
+  });
+});
+
+router.get('/portal/medication-reminders', demoOnly, (req, res) => {
+  const phone = req.query.phone;
+  const patient = DEMO_PATIENTS.find(p => p.phone === phone);
+  if (!patient) return res.status(404).json({ message: 'No records found' });
+  res.json({
+    patient: { name: patient.name, patientId: patient.patientId },
+    medications: [
+      { name: 'Amlodipine', dosage: '5mg', frequency: '1-0-0', duration: '30 days', timing: 'after-food', diagnosis: 'Hypertension', prescribedDate: new Date('2025-05-20'), prescriptionNo: 'RX-00001' },
+      { name: 'Atorvastatin', dosage: '10mg', frequency: '0-0-1', duration: '30 days', timing: 'bedtime', diagnosis: 'Hypertension', prescribedDate: new Date('2025-05-20'), prescriptionNo: 'RX-00001' },
+      { name: 'Metformin', dosage: '500mg', frequency: '1-0-1', duration: '30 days', timing: 'after-food', diagnosis: 'Diabetes', prescribedDate: new Date('2025-05-27'), prescriptionNo: 'RX-00003' }
+    ],
+    totalActive: 3
+  });
+});
+
+router.get('/portal/track/:id', demoOnly, (req, res) => {
+  const apt = DEMO_APPOINTMENTS[3];
+  res.json({
+    appointment: { id: apt._id, tokenNumber: apt.tokenNumber, date: apt.date, timeSlot: apt.timeSlot, status: apt.status, type: apt.type },
+    doctor: { _id: 'demo-doctor-001', name: 'Demo Doctor', specialty: 'general', clinicName: 'DocClinic Demo Centre', workingHours: { start: '09:00', end: '18:00' } },
+    patient: { name: apt.patientId?.name || 'Patient', phone: '9876543213' },
+    queue: { totalToday: 5, completed: 2, currentToken: 3, myToken: apt.tokenNumber, myPosition: 4, patientsAhead: 1, estimatedWaitMinutes: 15 }
+  });
+});
+
 module.exports = router;
