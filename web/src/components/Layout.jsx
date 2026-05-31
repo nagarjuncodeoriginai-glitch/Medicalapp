@@ -4,7 +4,7 @@ import {
   FiHome, FiUsers, FiCalendar, FiFileText, FiDollarSign,
   FiSettings, FiLogOut, FiMenu, FiX, FiSearch, FiUser,
   FiMoon, FiSun, FiChevronDown, FiPackage, FiActivity,
-  FiBarChart2, FiCreditCard, FiBell
+  FiBarChart2, FiCreditCard, FiBell, FiGlobe
 } from 'react-icons/fi';
 import { FaUserMd, FaStethoscope, FaHeartbeat } from 'react-icons/fa';
 import { clearSession, getUser } from '../utils/auth';
@@ -22,6 +22,7 @@ const navItems = [
   { path: '/billing', icon: FiDollarSign, label: 'Billing' },
   { path: '/expenses', icon: FiCreditCard, label: 'Expenses' },
   { path: '/follow-ups', icon: FiBell, label: 'Follow-ups' },
+  { path: '/patient-portal', icon: FiGlobe, label: 'Patient Portal' },
   { path: '/reports', icon: FiBarChart2, label: 'Reports' },
   { path: '/profile', icon: FiUser, label: 'My Profile' },
   { path: '/settings', icon: FiSettings, label: 'Settings' }
