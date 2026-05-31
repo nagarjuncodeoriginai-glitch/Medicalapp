@@ -503,4 +503,51 @@ router.post('/uploads', demoOnly, (req, res) => {
   res.json({ url: '/uploads/demo-file.pdf', filename: 'demo-file.pdf', size: 12345, mimetype: 'application/pdf' });
 });
 
+// ==================== PATIENT PORTAL (PUBLIC) ====================
+router.get('/portal/doctor/:id', demoOnly, (req, res) => {
+  res.json({ _id: 'demo-doctor-001', name: 'Demo Doctor', specialty: 'general', qualification: 'MBBS, MD', clinicName: 'DocClinic Demo Centre', clinicAddress: '123 Health Street', clinicCity: 'Mumbai', consultationFee: 500, workingHours: { start: '09:00', end: '18:00' } });
+});
+
+router.get('/portal/doctors', demoOnly, (req, res) => {
+  res.json([
+    { _id: 'demo-doctor-001', name: 'Demo Doctor', specialty: 'general', qualification: 'MBBS, MD', clinicName: 'DocClinic Demo Centre', clinicCity: 'Mumbai', consultationFee: 500 }
+  ]);
+});
+
+router.get('/portal/doctor/:id/slots', demoOnly, (req, res) => {
+  res.json({ slots: ['09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM', '05:00 PM'], bookedCount: 5, fee: 500 });
+});
+
+router.post('/portal/book', demoOnly, (req, res) => {
+  res.status(201).json({
+    message: 'Appointment booked successfully!',
+    appointment: { id: `apt-${Date.now()}`, tokenNumber: Math.floor(Math.random() * 10) + 1, date: req.body.date, timeSlot: req.body.timeSlot, status: 'scheduled' },
+    patient: { id: `pat-${Date.now()}`, patientId: `PAT-${String(DEMO_PATIENTS.length + 1).padStart(4, '0')}`, name: req.body.patientName }
+  });
+});
+
+router.post('/portal/symptom-check', demoOnly, (req, res) => {
+  const symptoms = (req.body.symptoms || '').toLowerCase();
+  let urgency = 'routine';
+  if (symptoms.includes('chest pain') || symptoms.includes('breathing') || symptoms.includes('unconscious')) urgency = 'emergency';
+  else if (symptoms.includes('high fever') || symptoms.includes('severe') || symptoms.includes('blood')) urgency = 'urgent';
+
+  res.json({
+    urgency,
+    urgencyExplanation: urgency === 'emergency' ? 'Symptoms suggest a potentially life-threatening condition.' : urgency === 'urgent' ? 'Symptoms need attention within 24 hours.' : 'Symptoms can be addressed at your convenience.',
+    possibleConditions: ['Viral Upper Respiratory Infection', 'Common Cold', 'Mild Allergic Reaction'],
+    immediateAdvice: urgency === 'emergency' ? 'Call 108 immediately or visit nearest ER.' : 'Rest, stay hydrated, and monitor symptoms.',
+    shouldVisitDoctor: true,
+    suggestedSpecialty: 'general',
+    redFlags: urgency !== 'routine' ? ['If symptoms worsen', 'Difficulty breathing', 'Persistent high fever'] : [],
+    homeRemedies: ['Rest adequately', 'Drink warm fluids', 'Take paracetamol if fever > 100°F'],
+    disclaimer: 'This is AI triage only. Always consult a qualified doctor.',
+    provider: 'demo'
+  });
+});
+
+router.get('/portal/my-appointments', demoOnly, (req, res) => {
+  res.json({ appointments: [] });
+});
+
 module.exports = router;

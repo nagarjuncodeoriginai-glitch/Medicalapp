@@ -23,6 +23,11 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { AuthProvider } from './context/AuthContext';
 import { isLoggedIn } from './utils/auth';
 
+// Patient Portal (public pages - no auth)
+import SymptomChecker from './pages/portal/SymptomChecker';
+import BookAppointment from './pages/portal/BookAppointment';
+import Pricing from './pages/portal/Pricing';
+
 function ProtectedRoute({ children }) {
   return isLoggedIn() ? children : <Navigate to="/login" replace />;
 }
@@ -47,6 +52,13 @@ export default function App() {
         toastOptions={{ style: { borderRadius: '12px', background: '#333', color: '#fff' } }}
       />
       <Routes>
+        {/* Patient Portal - Public (no auth) */}
+        <Route path="/symptom-checker" element={<SymptomChecker />} />
+        <Route path="/book/:doctorId" element={<BookAppointment />} />
+        <Route path="/book" element={<BookAppointment />} />
+        <Route path="/pricing" element={<Pricing />} />
+
+        {/* Auth pages */}
         <Route path="/login" element={<PublicOnly><Login /></PublicOnly>} />
         <Route path="/register" element={<PublicOnly><Register /></PublicOnly>} />
         <Route path="/forgot-password" element={<PublicOnly><ForgotPassword /></PublicOnly>} />
