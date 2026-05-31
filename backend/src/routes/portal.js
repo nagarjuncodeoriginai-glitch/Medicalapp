@@ -227,4 +227,34 @@ router.get(
   })
 );
 
+// Patient records lookup (by phone - no auth, phone-based verification)
+router.get(
+  '/my-records',
+  asyncHandler(async (req, res) => {
+    const { phone } = req.query;
+    if (!phone) return res.status(400).json({ message: 'phone query param required' });
+
+    const patient = await Patient.findOne({ phone }).sort({ createdAt: -1 });
+    if (!patient) return res.status(404).json({ message: 'No records found for this phone number. Please check with your doctor.' });
+
+    const [appointments, prescriptions, labTests, bills] = await Promise.all([
+      Appointment.find({ patientId: patient._id }).populate('doctorId', 'name clinicName').sort({ date: -1 }).limit(20),
+      require('../models/Prescription').find({ patientId: patient._id }).sort({ createdAt: -1 }).limit(10),
+      require('../models/LabTest').find({ patientId: patient._id }).sort({ createdAt: -1 }).limit(10),
+      require('../models/Billing').find({ patientId: patient._id }).sort({ createdAt: -1 }).limit(10)
+    ]);
+
+    res.json({ patient: { name: patient.name, patientId: patient.patientId, age: patient.age, gender: patient.gender, phone: patient.phone }, appointments, prescriptions, labTests, bills });
+  })
+);
+
+// Patient submits review
+router.post(
+  '/review',
+  asyncHandler(async (req, res) => {
+    // For MVP, just acknowledge - in production save to a Review model
+    res.json({ message: 'Review submitted successfully. Thank you!' });
+  })
+);
+
 module.exports = router;

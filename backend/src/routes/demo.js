@@ -550,4 +550,21 @@ router.get('/portal/my-appointments', demoOnly, (req, res) => {
   res.json({ appointments: [] });
 });
 
+router.get('/portal/my-records', demoOnly, (req, res) => {
+  const phone = req.query.phone;
+  const patient = DEMO_PATIENTS.find(p => p.phone === phone);
+  if (!patient) return res.status(404).json({ message: 'No records found for this phone number.' });
+  res.json({
+    patient: { name: patient.name, patientId: patient.patientId, age: patient.age, gender: patient.gender, phone: patient.phone },
+    appointments: DEMO_APPOINTMENTS.filter(a => a.patientId?._id === patient._id || a.patientId === patient._id),
+    prescriptions: DEMO_PRESCRIPTIONS.filter(rx => rx.patientId?._id === patient._id || rx.patientId === patient._id),
+    labTests: [{ _id: 'lt-demo', name: 'Complete Blood Count', category: 'Hematology', status: 'reported', resultSummary: 'Normal values', createdAt: new Date() }],
+    bills: DEMO_BILLS.filter(b => b.patientId?._id === patient._id || b.patientId === patient._id)
+  });
+});
+
+router.post('/portal/review', demoOnly, (req, res) => {
+  res.json({ message: 'Review submitted successfully. Thank you!' });
+});
+
 module.exports = router;

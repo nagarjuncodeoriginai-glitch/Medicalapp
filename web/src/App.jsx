@@ -27,6 +27,7 @@ import { isLoggedIn } from './utils/auth';
 // Patient Portal (public pages - no auth)
 import SymptomChecker from './pages/portal/SymptomChecker';
 import BookAppointment from './pages/portal/BookAppointment';
+import MyRecords from './pages/portal/MyRecords';
 import Pricing from './pages/portal/Pricing';
 
 function ProtectedRoute({ children }) {
@@ -57,6 +58,7 @@ export default function App() {
         <Route path="/symptom-checker" element={<SymptomChecker />} />
         <Route path="/book/:doctorId" element={<BookAppointment />} />
         <Route path="/book" element={<BookAppointment />} />
+        <Route path="/my-records" element={<MyRecords />} />
         <Route path="/pricing" element={<Pricing />} />
 
         {/* Auth pages */}
